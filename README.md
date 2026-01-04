@@ -11,13 +11,13 @@ Unofficial Kotlin/Java SDK for the [Dhan](https://dhanhq.co) trading platform. S
 ### Gradle (Kotlin DSL)
 
 ```kotlin
-implementation("io.github.sonicalgo:dhan-java-sdk:2.1.0")
+implementation("io.github.sonicalgo:dhan-java-sdk:2.2.0")
 ```
 
 ### Gradle (Groovy)
 
 ```groovy
-implementation 'io.github.sonicalgo:dhan-java-sdk:2.1.0'
+implementation 'io.github.sonicalgo:dhan-java-sdk:2.2.0'
 ```
 
 ### Maven
