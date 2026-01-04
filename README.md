@@ -11,13 +11,13 @@ Unofficial Kotlin/Java SDK for the [Dhan](https://dhanhq.co) trading platform. S
 ### Gradle (Kotlin DSL)
 
 ```kotlin
-implementation("io.github.sonicalgo:dhan-java-sdk:1.0.0")
+implementation("io.github.sonicalgo:dhan-java-sdk:2.0.0")
 ```
 
 ### Gradle (Groovy)
 
 ```groovy
-implementation 'io.github.sonicalgo:dhan-java-sdk:1.0.0'
+implementation 'io.github.sonicalgo:dhan-java-sdk:2.0.0'
 ```
 
 ### Maven
@@ -26,7 +26,7 @@ implementation 'io.github.sonicalgo:dhan-java-sdk:1.0.0'
 <dependency>
     <groupId>io.github.sonicalgo</groupId>
     <artifactId>dhan-java-sdk</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -37,8 +37,8 @@ implementation 'io.github.sonicalgo:dhan-java-sdk:1.0.0'
 
 ```kotlin
 import io.github.sonicalgo.dhan.Dhan
-import io.github.sonicalgo.dhan.model.request.*
-import io.github.sonicalgo.dhan.model.enums.*
+import io.github.sonicalgo.dhan.usecase.*
+import io.github.sonicalgo.dhan.common.*
 
 // Create SDK instance
 val dhan = Dhan.builder()
@@ -47,26 +47,26 @@ val dhan = Dhan.builder()
     .build()
 
 // Get user profile
-val profile = dhan.getAuthApi().getProfile()
+val profile = dhan.getProfile()
 println("Client: ${profile.dhanClientId}")
 
 // Get market quote
-val ltps = dhan.getMarketQuoteApi().getLtp(mapOf(
+val ltps = dhan.getLtp(mapOf(
     "NSE_EQ" to listOf(1333)  // HDFC Bank
 ))
 println("LTP: ${ltps["NSE_EQ"]?.get("1333")?.lastPrice}")
 
 // Place an order
-val response = dhan.getOrdersApi().placeOrder(PlaceOrderParams(
-    transactionType = TransactionType.BUY,
-    exchangeSegment = ExchangeSegment.NSE_EQ,
-    productType = ProductType.CNC,
-    orderType = OrderType.LIMIT,
-    validity = Validity.DAY,
-    securityId = "1333",
-    quantity = 10,
+val response = dhan.placeOrder(PlaceOrderParams {
+    transactionType = TransactionType.BUY
+    exchangeSegment = ExchangeSegment.NSE_EQ
+    productType = ProductType.CNC
+    orderType = OrderType.LIMIT
+    validity = Validity.DAY
+    securityId = "1333"
+    quantity = 10
     price = 1428.0
-))
+})
 println("Order ID: ${response.orderId}")
 ```
 
@@ -77,8 +77,8 @@ println("Order ID: ${response.orderId}")
 
 ```java
 import io.github.sonicalgo.dhan.Dhan;
-import io.github.sonicalgo.dhan.model.request.*;
-import io.github.sonicalgo.dhan.model.enums.*;
+import io.github.sonicalgo.dhan.usecase.*;
+import io.github.sonicalgo.dhan.common.*;
 import java.util.Map;
 import java.util.List;
 
@@ -89,34 +89,26 @@ Dhan dhan = Dhan.builder()
     .build();
 
 // Get user profile
-var profile = dhan.getAuthApi().getProfile();
+var profile = dhan.getProfile();
 System.out.println("Client: " + profile.getDhanClientId());
 
 // Get market quote
-var ltps = dhan.getMarketQuoteApi().getLtp(Map.of(
+var ltps = dhan.getLtp(Map.of(
     "NSE_EQ", List.of(1333)  // HDFC Bank
 ));
 System.out.println("LTP: " + ltps.get("NSE_EQ").get("1333").getLastPrice());
 
-// Place an order
-var response = dhan.getOrdersApi().placeOrder(new PlaceOrderParams(
-    null,                       // dhanClientId (auto-injected)
-    null,                       // correlationId
-    TransactionType.BUY,
-    ExchangeSegment.NSE_EQ,
-    ProductType.CNC,
-    OrderType.LIMIT,
-    Validity.DAY,
-    "1333",                     // securityId
-    10,                         // quantity
-    0,                          // disclosedQuantity
-    1428.0,                     // price
-    0.0,                        // triggerPrice
-    false,                      // afterMarketOrder
-    null,                       // amoTime
-    null,                       // boProfitValue
-    null                        // boStopLossValue
-));
+// Place an order using builder
+var response = dhan.placeOrder(PlaceOrderParamsBuilder.builder()
+    .transactionType(TransactionType.BUY)
+    .exchangeSegment(ExchangeSegment.NSE_EQ)
+    .productType(ProductType.CNC)
+    .orderType(OrderType.LIMIT)
+    .validity(Validity.DAY)
+    .securityId("1333")
+    .quantity(10)
+    .price(1428.0)
+    .build());
 System.out.println("Order ID: " + response.getOrderId());
 ```
 
@@ -136,7 +128,7 @@ The SDK uses type-safe enums throughout the API responses for better code safety
 
 ```kotlin
 // Order response uses enums
-val order = dhan.getOrdersApi().getOrderById("order-id")
+val order = dhan.getOrderById("order-id")
 when (order.orderStatus) {
     OrderStatus.TRADED -> println("Order filled")
     OrderStatus.REJECTED -> println("Order rejected")
@@ -146,7 +138,7 @@ when (order.orderStatus) {
 }
 
 // Position uses enums
-val positions = dhan.getPortfolioApi().getPositions()
+val positions = dhan.getPositions()
 positions.filter { it.positionType == PositionType.LONG }
     .forEach { println("Long position: ${it.tradingSymbol}") }
 ```
@@ -177,13 +169,79 @@ positions.filter { it.positionType == PositionType.LONG }
 
 ## Features
 
-- **13 REST API modules** - Orders, Portfolio, Market Quotes, Historical Data, Option Chain, and more
+- **41 REST API operations** - Orders, Portfolio, Market Quotes, Historical Data, Option Chain, and more
 - **Real-time market data** - WebSocket streaming with binary protocol (low latency)
 - **Real-time order updates** - Order and trade updates via WebSocket
 - **Automatic reconnection** - WebSocket clients reconnect with exponential backoff
 - **Configurable rate limiting** - Automatic retry with exponential backoff for HTTP 429
 - **Debug logging** - Optional HTTP request/response logging for troubleshooting
 - **Full Kotlin & Java compatibility** - Use from either language
+
+---
+
+## API Reference
+
+| Method | Description |
+|--------|-------------|
+| **Authentication** | |
+| `getProfile()` | Get user profile |
+| `setIp()` | Set static IP for order APIs |
+| `modifyIp()` | Modify IP (once per 7 days) |
+| `getIpConfiguration()` | Get current IP config |
+| `renewToken()` | Extend token validity |
+| **Orders** | |
+| `placeOrder()` | Place a single order |
+| `placeSlicingOrder()` | Place slicing order (auto-split) |
+| `modifyOrder()` | Modify an existing order |
+| `cancelOrder()` | Cancel an order |
+| `getOrders()` | Get all orders for the day |
+| `getOrderById()` | Get specific order |
+| `getOrderByCorrelationId()` | Get order by correlation ID |
+| `getTrades()` | Get all trades for the day |
+| `getTradesByOrderId()` | Get trades for specific order |
+| **Super Orders** | |
+| `placeSuperOrder()` | Place super order (entry + target + SL) |
+| `modifySuperOrder()` | Modify super order leg |
+| `cancelSuperOrder()` | Cancel super order leg |
+| `getSuperOrders()` | Get all super orders |
+| **Forever Orders (GTT)** | |
+| `placeForeverOrder()` | Place GTT order |
+| `modifyForeverOrder()` | Modify GTT order |
+| `cancelForeverOrder()` | Cancel GTT order |
+| `getForeverOrders()` | Get all GTT orders |
+| **Portfolio** | |
+| `getHoldings()` | Get holdings |
+| `getPositions()` | Get positions |
+| `convertPosition()` | Convert position product type |
+| **Funds** | |
+| `getFundLimits()` | Get fund limits |
+| `calculateMargin()` | Calculate margin requirements |
+| **Market Quotes** | |
+| `getLtp()` | Get last traded price |
+| `getOhlc()` | Get OHLC data |
+| `getQuote()` | Get full quote with depth |
+| **Historical Data** | |
+| `getDailyHistory()` | Get daily OHLCV |
+| `getIntradayHistory()` | Get intraday OHLCV |
+| **Option Chain** | |
+| `getExpiryList()` | Get expiry dates |
+| `getOptionChain()` | Get option chain |
+| **Instruments** | |
+| `getCompactCsvUrl()` | Get compact CSV URL |
+| `getDetailedCsvUrl()` | Get detailed CSV URL |
+| `getInstruments()` | Download segment instruments |
+| **EDIS** | |
+| `generateTpin()` | Generate T-PIN |
+| `generateEdisForm()` | Generate EDIS form |
+| `inquireEdisStatus()` | Check EDIS status |
+| **Traders Control** | |
+| `setKillSwitch()` | Activate/deactivate kill switch |
+| **Statement** | |
+| `getLedger()` | Get ledger entries |
+| `getTradeHistory()` | Get trade history |
+| **WebSocket** | |
+| `createMarketFeedClient()` | Create market data WebSocket |
+| `createOrderStreamClient()` | Create order update WebSocket |
 
 ---
 
@@ -223,7 +281,7 @@ val feedClient = dhan.createMarketFeedClient(
 )
 
 // Order Update Client
-val orderClient = dhan.createOrderUpdateClient(
+val orderClient = dhan.createOrderStreamClient(
     maxReconnectAttempts = 10,   // Default: 5
     autoReconnectEnabled = true  // Default: true
 )
@@ -261,6 +319,7 @@ val orderClient = dhan.createOrderUpdateClient(
 
 ## Table of Contents
 
+- [API Reference](#api-reference)
 - [Configuration](#configuration)
 - [WebSocket Streaming](#websocket-streaming)
   - [Market Data Feed](#market-data-feed)
@@ -294,8 +353,7 @@ val orderClient = dhan.createOrderUpdateClient(
 Real-time market data via WebSocket with binary protocol encoding (low latency). Prices are formatted as String with 2 decimal places (e.g., `"1428.50"`).
 
 ```kotlin
-import io.github.sonicalgo.dhan.model.ws.*
-import io.github.sonicalgo.dhan.websocket.marketfeed.*
+import io.github.sonicalgo.dhan.websocket.marketFeed.*
 
 // Create client with custom reconnection settings (optional)
 val feedClient = dhan.createMarketFeedClient(
@@ -306,21 +364,29 @@ val feedClient = dhan.createMarketFeedClient(
 
 // Add listener
 feedClient.addListener(object : MarketFeedListener {
-    override fun onConnected(isReconnect: Boolean) {
-        if (isReconnect) {
-            println("Reconnected! Subscriptions restored.")
-        } else {
-            println("Connected to market feed!")
-            // Subscribe with TICKER mode
-            feedClient.subscribe(
-                listOf(
-                    Instrument.nseEquity("1333"),   // HDFC Bank
-                    Instrument.nseEquity("11536"),  // TCS
-                    Instrument.index("26000")       // Nifty 50
-                ),
-                FeedMode.TICKER
-            )
-        }
+    override fun onConnected() {
+        println("Connected to market feed!")
+        // Subscribe with TICKER mode
+        feedClient.subscribe(
+            listOf(
+                Instrument.nseEquity("1333"),   // HDFC Bank
+                Instrument.nseEquity("11536"),  // TCS
+                Instrument.index("26000")       // Nifty 50
+            ),
+            FeedMode.TICKER
+        )
+    }
+
+    override fun onReconnected() {
+        println("Reconnected! Subscriptions restored.")
+    }
+
+    override fun onDisconnected(code: Int, reason: String) {
+        println("Disconnected: $reason")
+    }
+
+    override fun onError(error: Throwable) {
+        println("Error: ${error.message}")
     }
 
     override fun onTickerData(data: TickerData) {
@@ -346,14 +412,6 @@ feedClient.addListener(object : MarketFeedListener {
 
     override fun onReconnecting(attempt: Int, delayMs: Long) {
         println("Reconnecting (attempt $attempt) in ${delayMs}ms...")
-    }
-
-    override fun onDisconnected(code: Int, reason: String) {
-        println("Disconnected: $reason")
-    }
-
-    override fun onError(error: Throwable) {
-        println("Error: ${error.message}")
     }
 })
 
@@ -413,23 +471,30 @@ Instrument.bseCurrency("...")     // BSE Currency
 Real-time order and trade updates via WebSocket.
 
 ```kotlin
-import io.github.sonicalgo.dhan.model.ws.*
-import io.github.sonicalgo.dhan.websocket.orderupdate.*
+import io.github.sonicalgo.dhan.websocket.order.*
 
 // Create client with custom reconnection settings (optional)
-val orderClient = dhan.createOrderUpdateClient(
+val orderClient = dhan.createOrderStreamClient(
     maxReconnectAttempts = 10,   // Default: 5
     autoReconnectEnabled = true  // Default: true
 )
 
 // Add listener
-orderClient.addListener(object : OrderUpdateListener {
-    override fun onConnected(isReconnect: Boolean) {
-        if (isReconnect) {
-            println("Reconnected to order updates")
-        } else {
-            println("Connected to order updates!")
-        }
+orderClient.addListener(object : OrderStreamListener {
+    override fun onConnected() {
+        println("Connected to order updates!")
+    }
+
+    override fun onReconnected() {
+        println("Reconnected to order updates")
+    }
+
+    override fun onDisconnected(code: Int, reason: String) {
+        println("Disconnected: $reason")
+    }
+
+    override fun onError(error: Throwable) {
+        println("Error: ${error.message}")
     }
 
     override fun onOrderUpdate(update: OrderUpdate) {
@@ -446,20 +511,8 @@ orderClient.addListener(object : OrderUpdateListener {
         println("Trade: ${update.tradedQuantity} @ ${update.tradedPrice}")
     }
 
-    override fun onConnectionStatus(status: ConnectionStatus) {
-        println("Connection status: $status")
-    }
-
     override fun onReconnecting(attempt: Int, delayMs: Long) {
         println("Reconnecting (attempt $attempt) in ${delayMs}ms...")
-    }
-
-    override fun onDisconnected(code: Int, reason: String) {
-        println("Disconnected: $reason")
-    }
-
-    override fun onError(error: Throwable) {
-        println("Error: ${error.message}")
     }
 })
 
@@ -479,7 +532,7 @@ REST API calls automatically use the latest access token. However, WebSocket cli
 dhan.setAccessToken("new-access-token")
 
 // REST API calls immediately use new token
-dhan.getOrdersApi().getOrderBook()  // Uses new token
+dhan.getOrders()  // Uses new token
 
 // WebSocket needs reconnection to use new token
 feedClient.close()
@@ -493,31 +546,29 @@ feedClient.connect()  // Now authenticates with new token
 ### Authentication
 
 ```kotlin
-val authApi = dhan.getAuthApi()
-
 // Get user profile
-val profile = authApi.getProfile()
+val profile = dhan.getProfile()
 // Returns: dhanClientId, tokenValidity, activeSegments, dataPlan
 
 // Set static IP (required for order APIs)
-authApi.setIp(SetIpParams(
-    ip = "203.0.113.50",
+dhan.setIp(SetIpParams {
+    ip = "203.0.113.50"
     ipFlag = IpFlag.PRIMARY
-))
+})
 
 // Modify IP (allowed once every 7 days)
-authApi.modifyIp(SetIpParams(
-    ip = "203.0.113.51",
+dhan.modifyIp(SetIpParams {
+    ip = "203.0.113.51"
     ipFlag = IpFlag.SECONDARY
-))
+})
 
 // Get IP configuration
-val ipConfig = authApi.getIpConfiguration()
+val ipConfig = dhan.getIpConfiguration()
 println("Primary IP: ${ipConfig.primaryIp}")
 println("Secondary IP: ${ipConfig.secondaryIp}")
 
 // Renew token (extends validity for 24 hours)
-authApi.renewToken()
+dhan.renewToken()
 ```
 
 ### Orders
@@ -526,195 +577,335 @@ authApi.renewToken()
 
 #### Place Order
 
-```kotlin
-val ordersApi = dhan.getOrdersApi()
+<details open>
+<summary>Kotlin</summary>
 
-val response = ordersApi.placeOrder(PlaceOrderParams(
-    transactionType = TransactionType.BUY,
-    exchangeSegment = ExchangeSegment.NSE_EQ,
-    productType = ProductType.CNC,        // CNC, INTRADAY, MARGIN, MTF, CO, BO
-    orderType = OrderType.LIMIT,          // LIMIT, MARKET, STOP_LOSS, STOP_LOSS_MARKET
-    validity = Validity.DAY,              // DAY or IOC
-    securityId = "1333",
-    quantity = 10,
-    price = 1428.0,
-    disclosedQuantity = 0,                // Optional
-    triggerPrice = 0.0,                   // For SL orders
-    afterMarketOrder = false,             // AMO flag
-    amoTime = AmoTime.OPEN,               // PRE_OPEN, OPEN, OPEN_30, OPEN_60
-    correlationId = "my-order-1"          // Optional tracking ID
-))
+```kotlin
+val response = dhan.placeOrder(PlaceOrderParams {
+    transactionType = TransactionType.BUY
+    exchangeSegment = ExchangeSegment.NSE_EQ
+    productType = ProductType.CNC        // CNC, INTRADAY, MARGIN, MTF, CO, BO
+    orderType = OrderType.LIMIT          // LIMIT, MARKET, STOP_LOSS, STOP_LOSS_MARKET
+    validity = Validity.DAY              // DAY or IOC
+    securityId = "1333"
+    quantity = 10
+    price = 1428.0
+    disclosedQuantity = 0                // Optional
+    triggerPrice = 0.0                   // For SL orders
+    afterMarketOrder = false             // AMO flag
+    amoTime = AmoTime.OPEN               // PRE_OPEN, OPEN, OPEN_30, OPEN_60
+    correlationId = "my-order-1"         // Optional tracking ID
+})
 println("Order ID: ${response.orderId}")
 println("Status: ${response.orderStatus}")
 ```
+
+</details>
+
+<details>
+<summary>Java</summary>
+
+```java
+var response = dhan.placeOrder(PlaceOrderParamsBuilder.builder()
+    .transactionType(TransactionType.BUY)
+    .exchangeSegment(ExchangeSegment.NSE_EQ)
+    .productType(ProductType.CNC)
+    .orderType(OrderType.LIMIT)
+    .validity(Validity.DAY)
+    .securityId("1333")
+    .quantity(10)
+    .price(1428.0)
+    .disclosedQuantity(0)
+    .triggerPrice(0.0)
+    .afterMarketOrder(false)
+    .amoTime(AmoTime.OPEN)
+    .correlationId("my-order-1")
+    .build());
+System.out.println("Order ID: " + response.getOrderId());
+System.out.println("Status: " + response.getOrderStatus());
+```
+
+</details>
 
 #### Slicing Order (Large Orders)
 
 ```kotlin
 // Auto-splits large orders per exchange freeze limits
-val response = ordersApi.placeSlicingOrder(SlicingOrderParams(
-    transactionType = TransactionType.BUY,
-    exchangeSegment = ExchangeSegment.NSE_FNO,
-    productType = ProductType.INTRADAY,
-    orderType = OrderType.LIMIT,
-    validity = Validity.DAY,
-    securityId = "43225",
-    quantity = 5000,  // Will be sliced into smaller orders
+val response = dhan.placeSlicingOrder(SlicingOrderParams {
+    transactionType = TransactionType.BUY
+    exchangeSegment = ExchangeSegment.NSE_FNO
+    productType = ProductType.INTRADAY
+    orderType = OrderType.LIMIT
+    validity = Validity.DAY
+    securityId = "43225"
+    quantity = 5000  // Will be sliced into smaller orders
     price = 21000.0
-))
+})
 ```
 
 #### Modify Order
 
+<details open>
+<summary>Kotlin</summary>
+
 ```kotlin
-val modified = ordersApi.modifyOrder(
+val modified = dhan.modifyOrder(
     orderId = "240108010918222",
-    params = ModifyOrderParams(
-        orderType = OrderType.LIMIT,
-        legName = LegName.ENTRY_LEG,
-        quantity = 15,
-        price = 1430.0,
-        disclosedQuantity = 0,
-        triggerPrice = 0.0,
+    params = ModifyOrderParams {
+        orderType = OrderType.LIMIT
+        legName = LegName.ENTRY_LEG
+        quantity = 15
+        price = 1430.0
+        disclosedQuantity = 0
+        triggerPrice = 0.0
         validity = Validity.DAY
-    )
+    }
 )
 ```
+
+</details>
+
+<details>
+<summary>Java</summary>
+
+```java
+var modified = dhan.modifyOrder(
+    "240108010918222",
+    ModifyOrderParamsBuilder.builder()
+        .orderType(OrderType.LIMIT)
+        .legName(LegName.ENTRY_LEG)
+        .quantity(15)
+        .price(1430.0)
+        .disclosedQuantity(0)
+        .triggerPrice(0.0)
+        .validity(Validity.DAY)
+        .build()
+);
+```
+
+</details>
 
 #### Cancel Order
 
 ```kotlin
-val cancelled = ordersApi.cancelOrder("240108010445130")
+val cancelled = dhan.cancelOrder("240108010445130")
 ```
 
 #### Query Orders
 
 ```kotlin
 // Get all orders for the day
-val orderBook = ordersApi.getOrderBook()
+val orderBook = dhan.getOrders()
 
 // Get specific order details
-val order = ordersApi.getOrderById("240108010445130")
+val order = dhan.getOrderById("240108010445130")
 
 // Get order by correlation ID
-val orderByCorr = ordersApi.getOrderByCorrelationId("my-order-1")
+val orderByCorr = dhan.getOrderByCorrelationId("my-order-1")
 
 // Get all trades for the day
-val trades = ordersApi.getTradeBook()
+val trades = dhan.getTrades()
 
 // Get trades for specific order
-val orderTrades = ordersApi.getTradesByOrderId("240108010445100")
+val orderTrades = dhan.getTradesByOrderId("240108010445100")
 ```
 
 ### Super Orders
 
 Multi-leg orders with entry, target, and stop-loss.
 
-```kotlin
-val superApi = dhan.getSuperOrdersApi()
+<details open>
+<summary>Kotlin</summary>
 
+```kotlin
 // Place super order
-val response = superApi.placeSuperOrder(PlaceSuperOrderParams(
-    transactionType = TransactionType.BUY,
-    exchangeSegment = ExchangeSegment.NSE_EQ,
-    productType = ProductType.INTRADAY,
-    orderType = OrderType.LIMIT,
-    securityId = "1333",
-    quantity = 10,
-    price = 1428.0,
-    targetPrice = 1450.0,
-    stopLossPrice = 1410.0,
+val response = dhan.placeSuperOrder(PlaceSuperOrderParams {
+    transactionType = TransactionType.BUY
+    exchangeSegment = ExchangeSegment.NSE_EQ
+    productType = ProductType.INTRADAY
+    orderType = OrderType.LIMIT
+    securityId = "1333"
+    quantity = 10
+    price = 1428.0
+    targetPrice = 1450.0
+    stopLossPrice = 1410.0
     trailingJump = 5.0  // Trailing stop-loss
-))
+})
 println("Super Order ID: ${response.orderId}")
 
 // Modify specific leg
-superApi.modifySuperOrder(
+dhan.modifySuperOrder(
     orderId = "order-id",
-    params = ModifySuperOrderParams(
-        legName = LegName.TARGET_LEG,
-        orderType = OrderType.LIMIT,
-        quantity = 10,
-        price = 1460.0,
-        triggerPrice = 0.0,
+    params = ModifySuperOrderParams {
+        legName = LegName.TARGET_LEG
+        orderType = OrderType.LIMIT
+        quantity = 10
+        price = 1460.0
+        triggerPrice = 0.0
         validity = Validity.DAY
-    )
+    }
 )
 
 // Cancel by leg
-superApi.cancelSuperOrder("order-id", LegName.STOP_LOSS_LEG)
+dhan.cancelSuperOrder("order-id", LegName.STOP_LOSS_LEG)
 
 // Get all super orders
-val superOrders = superApi.getSuperOrderBook()
+val superOrders = dhan.getSuperOrders()
 ```
+
+</details>
+
+<details>
+<summary>Java</summary>
+
+```java
+// Place super order
+var response = dhan.placeSuperOrder(PlaceSuperOrderParamsBuilder.builder()
+    .transactionType(TransactionType.BUY)
+    .exchangeSegment(ExchangeSegment.NSE_EQ)
+    .productType(ProductType.INTRADAY)
+    .orderType(OrderType.LIMIT)
+    .securityId("1333")
+    .quantity(10)
+    .price(1428.0)
+    .targetPrice(1450.0)
+    .stopLossPrice(1410.0)
+    .trailingJump(5.0)
+    .build());
+System.out.println("Super Order ID: " + response.getOrderId());
+
+// Modify specific leg
+dhan.modifySuperOrder(
+    "order-id",
+    ModifySuperOrderParamsBuilder.builder()
+        .legName(LegName.TARGET_LEG)
+        .orderType(OrderType.LIMIT)
+        .quantity(10)
+        .price(1460.0)
+        .triggerPrice(0.0)
+        .validity(Validity.DAY)
+        .build()
+);
+
+// Cancel by leg
+dhan.cancelSuperOrder("order-id", LegName.STOP_LOSS_LEG);
+
+// Get all super orders
+var superOrders = dhan.getSuperOrders();
+```
+
+</details>
 
 ### Forever Orders (GTT)
 
 Good Till Triggered orders execute automatically when price conditions are met.
 
-```kotlin
-val foreverApi = dhan.getForeverOrdersApi()
+<details open>
+<summary>Kotlin</summary>
 
+```kotlin
 // Place single GTT order
-val response = foreverApi.placeForeverOrder(PlaceForeverOrderParams(
-    orderFlag = ForeverOrderFlag.SINGLE,
-    transactionType = TransactionType.BUY,
-    exchangeSegment = ExchangeSegment.NSE_EQ,
-    productType = ProductType.CNC,
-    orderType = OrderType.LIMIT,
-    validity = Validity.DAY,
-    securityId = "1333",
-    quantity = 10,
-    price = 1400.0,
+val response = dhan.placeForeverOrder(PlaceForeverOrderParams {
+    orderFlag = ForeverOrderFlag.SINGLE
+    transactionType = TransactionType.BUY
+    exchangeSegment = ExchangeSegment.NSE_EQ
+    productType = ProductType.CNC
+    orderType = OrderType.LIMIT
+    validity = Validity.DAY
+    securityId = "1333"
+    quantity = 10
+    price = 1400.0
     triggerPrice = 1405.0
-))
+})
 println("Forever Order ID: ${response.orderId}")
 
 // Place OCO (One Cancels Other) order
-val ocoResponse = foreverApi.placeForeverOrder(PlaceForeverOrderParams(
-    orderFlag = ForeverOrderFlag.OCO,
-    transactionType = TransactionType.SELL,
-    exchangeSegment = ExchangeSegment.NSE_EQ,
-    productType = ProductType.CNC,
-    orderType = OrderType.LIMIT,
-    validity = Validity.DAY,
-    securityId = "1333",
-    quantity = 10,
-    price = 1500.0,           // Target price
-    triggerPrice = 1505.0,
-    price1 = 1380.0,          // Stop-loss price
+val ocoResponse = dhan.placeForeverOrder(PlaceForeverOrderParams {
+    orderFlag = ForeverOrderFlag.OCO
+    transactionType = TransactionType.SELL
+    exchangeSegment = ExchangeSegment.NSE_EQ
+    productType = ProductType.CNC
+    orderType = OrderType.LIMIT
+    validity = Validity.DAY
+    securityId = "1333"
+    quantity = 10
+    price = 1500.0           // Target price
+    triggerPrice = 1505.0
+    price1 = 1380.0          // Stop-loss price
     triggerPrice1 = 1385.0
-))
+})
 
 // Modify forever order
-foreverApi.modifyForeverOrder(
+dhan.modifyForeverOrder(
     orderId = "order-id",
-    params = ModifyForeverOrderParams(
-        orderFlag = ForeverOrderFlag.SINGLE,
-        orderType = OrderType.LIMIT,
-        legName = LegName.ENTRY_LEG,
-        quantity = 15,
-        price = 1395.0,
-        triggerPrice = 1400.0,
+    params = ModifyForeverOrderParams {
+        orderFlag = ForeverOrderFlag.SINGLE
+        orderType = OrderType.LIMIT
+        legName = LegName.ENTRY_LEG
+        quantity = 15
+        price = 1395.0
+        triggerPrice = 1400.0
         validity = Validity.DAY
-    )
+    }
 )
 
 // Cancel forever order
-foreverApi.cancelForeverOrder("order-id")
+dhan.cancelForeverOrder("order-id")
 
 // Get all forever orders
-val foreverOrders = foreverApi.getForeverOrderBook()
+val foreverOrders = dhan.getForeverOrders()
 ```
+
+</details>
+
+<details>
+<summary>Java</summary>
+
+```java
+// Place single GTT order
+var response = dhan.placeForeverOrder(PlaceForeverOrderParamsBuilder.builder()
+    .orderFlag(ForeverOrderFlag.SINGLE)
+    .transactionType(TransactionType.BUY)
+    .exchangeSegment(ExchangeSegment.NSE_EQ)
+    .productType(ProductType.CNC)
+    .orderType(OrderType.LIMIT)
+    .validity(Validity.DAY)
+    .securityId("1333")
+    .quantity(10)
+    .price(1400.0)
+    .triggerPrice(1405.0)
+    .build());
+System.out.println("Forever Order ID: " + response.getOrderId());
+
+// Modify forever order
+dhan.modifyForeverOrder(
+    "order-id",
+    ModifyForeverOrderParamsBuilder.builder()
+        .orderFlag(ForeverOrderFlag.SINGLE)
+        .orderType(OrderType.LIMIT)
+        .legName(LegName.ENTRY_LEG)
+        .quantity(15)
+        .price(1395.0)
+        .triggerPrice(1400.0)
+        .validity(Validity.DAY)
+        .build()
+);
+
+// Cancel forever order
+dhan.cancelForeverOrder("order-id");
+
+// Get all forever orders
+var foreverOrders = dhan.getForeverOrders();
+```
+
+</details>
 
 ### Portfolio
 
 #### Holdings
 
 ```kotlin
-val portfolioApi = dhan.getPortfolioApi()
-
-val holdings = portfolioApi.getHoldings()
+val holdings = dhan.getHoldings()
 for (holding in holdings) {
     println("${holding.tradingSymbol}: Qty=${holding.totalQuantity}, Avg=${holding.averageCostPrice}")
     println("  DP: ${holding.dpQty}, T1: ${holding.t1Qty}, Collateral: ${holding.collateralQty}")
@@ -724,7 +915,7 @@ for (holding in holdings) {
 #### Positions
 
 ```kotlin
-val positions = portfolioApi.getPositions()
+val positions = dhan.getPositions()
 for (pos in positions) {
     println("${pos.tradingSymbol}: ${pos.positionType}")
     println("  Qty=${pos.netQty}, P&L=${pos.realizedProfit}")
@@ -733,52 +924,98 @@ for (pos in positions) {
 
 #### Convert Position
 
+<details open>
+<summary>Kotlin</summary>
+
 ```kotlin
-val converted = portfolioApi.convertPosition(ConvertPositionParams(
-    fromProductType = ProductType.INTRADAY,
-    toProductType = ProductType.CNC,
-    exchangeSegment = ExchangeSegment.NSE_EQ,
-    positionType = PositionType.LONG,
-    securityId = "1333",
+val converted = dhan.convertPosition(ConvertPositionParams {
+    fromProductType = ProductType.INTRADAY
+    toProductType = ProductType.CNC
+    exchangeSegment = ExchangeSegment.NSE_EQ
+    positionType = PositionType.LONG
+    securityId = "1333"
     quantity = 10
-))
+})
 ```
+
+</details>
+
+<details>
+<summary>Java</summary>
+
+```java
+var converted = dhan.convertPosition(ConvertPositionParamsBuilder.builder()
+    .fromProductType(ProductType.INTRADAY)
+    .toProductType(ProductType.CNC)
+    .exchangeSegment(ExchangeSegment.NSE_EQ)
+    .positionType(PositionType.LONG)
+    .securityId("1333")
+    .quantity(10)
+    .build());
+```
+
+</details>
 
 ### Funds & Margins
 
-```kotlin
-val fundsApi = dhan.getFundsApi()
+<details open>
+<summary>Kotlin</summary>
 
+```kotlin
 // Get fund limit
-val funds = fundsApi.getFundLimit()
+val funds = dhan.getFundLimits()
 println("Available Balance: ${funds.availableBalance}")
 println("Utilized Amount: ${funds.utilizedAmount}")
 println("Collateral Amount: ${funds.collateralAmount}")
 
 // Calculate margin
-val margin = fundsApi.calculateMargin(MarginCalculatorParams(
-    exchangeSegment = ExchangeSegment.NSE_FNO,
-    transactionType = TransactionType.BUY,
-    quantity = 50,
-    productType = ProductType.INTRADAY,
-    securityId = "52175",
+val margin = dhan.calculateMargin(CalculateMarginParams {
+    exchangeSegment = ExchangeSegment.NSE_FNO
+    transactionType = TransactionType.BUY
+    quantity = 50
+    productType = ProductType.INTRADAY
+    securityId = "52175"
     price = 21000.0
-))
+})
 println("Total Margin: ${margin.totalMargin}")
 println("SPAN Margin: ${margin.spanMargin}")
 println("Exposure Margin: ${margin.exposureMargin}")
 ```
+
+</details>
+
+<details>
+<summary>Java</summary>
+
+```java
+// Get fund limit
+var funds = dhan.getFundLimits();
+System.out.println("Available Balance: " + funds.getAvailableBalance());
+System.out.println("Utilized Amount: " + funds.getUtilizedAmount());
+
+// Calculate margin
+var margin = dhan.calculateMargin(CalculateMarginParamsBuilder.builder()
+    .exchangeSegment(ExchangeSegment.NSE_FNO)
+    .transactionType(TransactionType.BUY)
+    .quantity(50)
+    .productType(ProductType.INTRADAY)
+    .securityId("52175")
+    .price(21000.0)
+    .build());
+System.out.println("Total Margin: " + margin.getTotalMargin());
+System.out.println("SPAN Margin: " + margin.getSpanMargin());
+```
+
+</details>
 
 ### Market Quotes
 
 Rate limit: 1 request/second, max 1000 instruments per request.
 
 ```kotlin
-val quoteApi = dhan.getMarketQuoteApi()
-
 // Get LTP for multiple instruments
 // Returns nested map: exchangeSegment -> securityId -> Ltp
-val ltps = quoteApi.getLtp(mapOf(
+val ltps = dhan.getLtp(mapOf(
     "NSE_EQ" to listOf(1333, 11536),
     "BSE_EQ" to listOf(532540)
 ))
@@ -789,7 +1026,7 @@ ltps.forEach { (segment, securities) ->
 }
 
 // Get OHLC data
-val ohlc = quoteApi.getOhlc(mapOf(
+val ohlc = dhan.getOhlc(mapOf(
     "NSE_EQ" to listOf(1333)
 ))
 ohlc.forEach { (segment, securities) ->
@@ -799,7 +1036,7 @@ ohlc.forEach { (segment, securities) ->
 }
 
 // Get full quote with market depth
-val quotes = quoteApi.getQuote(mapOf(
+val quotes = dhan.getQuote(mapOf(
     "NSE_EQ" to listOf(1333)
 ))
 quotes.forEach { (segment, securities) ->
@@ -814,31 +1051,60 @@ quotes.forEach { (segment, securities) ->
 
 ### Historical Data
 
-```kotlin
-val histApi = dhan.getHistoricalDataApi()
+<details open>
+<summary>Kotlin</summary>
 
+```kotlin
 // Get daily OHLCV data
-val dailyData = histApi.getDailyData(DailyHistoricalParams(
-    securityId = "1333",
-    exchangeSegment = ExchangeSegment.NSE_EQ,
-    instrument = InstrumentType.EQUITY,
-    fromDate = "2024-01-01",
+val dailyData = dhan.getDailyHistory(DailyHistoryParams {
+    securityId = "1333"
+    exchangeSegment = ExchangeSegment.NSE_EQ
+    instrument = InstrumentType.EQUITY
+    fromDate = "2024-01-01"
     toDate = "2024-02-01"
-))
+})
 dailyData.timestamp.forEachIndexed { i, ts ->
     println("$ts: O=${dailyData.open[i]}, H=${dailyData.high[i]}, L=${dailyData.low[i]}, C=${dailyData.close[i]}, V=${dailyData.volume[i]}")
 }
 
 // Get intraday data (5-minute candles)
-val intradayData = histApi.getIntradayData(IntradayHistoricalParams(
-    securityId = "1333",
-    exchangeSegment = ExchangeSegment.NSE_EQ,
-    instrument = InstrumentType.EQUITY,
-    interval = ChartInterval.MINUTE_5,
-    fromDate = "2024-01-15 09:15:00",
+val intradayData = dhan.getIntradayHistory(IntradayHistoryParams {
+    securityId = "1333"
+    exchangeSegment = ExchangeSegment.NSE_EQ
+    instrument = InstrumentType.EQUITY
+    interval = ChartInterval.MINUTE_5
+    fromDate = "2024-01-15 09:15:00"
     toDate = "2024-01-15 15:30:00"
-))
+})
 ```
+
+</details>
+
+<details>
+<summary>Java</summary>
+
+```java
+// Get daily OHLCV data
+var dailyData = dhan.getDailyHistory(DailyHistoryParamsBuilder.builder()
+    .securityId("1333")
+    .exchangeSegment(ExchangeSegment.NSE_EQ)
+    .instrument(InstrumentType.EQUITY)
+    .fromDate("2024-01-01")
+    .toDate("2024-02-01")
+    .build());
+
+// Get intraday data (5-minute candles)
+var intradayData = dhan.getIntradayHistory(IntradayHistoryParamsBuilder.builder()
+    .securityId("1333")
+    .exchangeSegment(ExchangeSegment.NSE_EQ)
+    .instrument(InstrumentType.EQUITY)
+    .interval(ChartInterval.MINUTE_5)
+    .fromDate("2024-01-15 09:15:00")
+    .toDate("2024-01-15 15:30:00")
+    .build());
+```
+
+</details>
 
 **Data availability:** Max 90 days per request, up to 5 years of historical data.
 
@@ -847,19 +1113,17 @@ val intradayData = histApi.getIntradayData(IntradayHistoricalParams(
 Rate limit: 1 request/3 seconds.
 
 ```kotlin
-val optionApi = dhan.getOptionChainApi()
-
 // Get expiry dates
-val expiries = optionApi.getExpiryList(ExpiryListParams(
+val expiries = dhan.getExpiryList(ExpiryListParams {
     underlyingScrip = 13  // NIFTY
-))
+})
 expiries.forEach { println(it) }
 
 // Get option chain
-val chain = optionApi.getOptionChain(OptionChainParams(
-    underlyingScrip = 13,
+val chain = dhan.getOptionChain(OptionChainParams {
+    underlyingScrip = 13
     expiry = expiries.first()
-))
+})
 println("Underlying LTP: ${chain.lastPrice}")
 chain.optionChain.forEach { (strike, data) ->
     println("Strike $strike:")
@@ -873,19 +1137,17 @@ chain.optionChain.forEach { (strike, data) ->
 Download instrument master data. **No authentication required.**
 
 ```kotlin
-val instrumentsApi = dhan.getInstrumentsApi()
-
 // Get compact CSV URL (essential instrument data)
-val compactUrl = instrumentsApi.getCompactCsvUrl()
+val compactUrl = dhan.getCompactCsvUrl()
 // https://images.dhan.co/api-data/api-scrip-master.csv
 
 // Get detailed CSV URL (includes margin requirements)
-val detailedUrl = instrumentsApi.getDetailedCsvUrl()
+val detailedUrl = dhan.getDetailedCsvUrl()
 // https://images.dhan.co/api-data/api-scrip-master-detailed.csv
 
 // Get instruments for specific segment (returns raw CSV/JSON)
-val nseEquity = instrumentsApi.getInstruments(ExchangeSegment.NSE_EQ)
-val nseFno = instrumentsApi.getInstruments(ExchangeSegment.NSE_FNO)
+val nseEquity = dhan.getInstruments(ExchangeSegment.NSE_EQ)
+val nseFno = dhan.getInstruments(ExchangeSegment.NSE_FNO)
 ```
 
 ### EDIS
@@ -893,21 +1155,19 @@ val nseFno = instrumentsApi.getInstruments(ExchangeSegment.NSE_FNO)
 Electronic Delivery Instruction Slip for authorizing delivery sell orders.
 
 ```kotlin
-val edisApi = dhan.getEdisApi()
-
 // Step 1: Generate T-PIN (sent to registered mobile)
-edisApi.generateTpin()
+dhan.generateTpin()
 
 // Step 2: Generate EDIS form
-val form = edisApi.generateEdisForm(EdisFormParams(
-    isin = "INE733E01010",
-    quantity = 10,
+val form = dhan.generateEdisForm(GenerateEdisFormParams {
+    isin = "INE733E01010"
+    quantity = 10
     exchange = Exchange.NSE
-))
+})
 // Display form.edisFormHtml to user for T-PIN entry
 
 // Step 3: Check status
-val status = edisApi.inquireEdisStatus("INE733E01010")
+val status = dhan.inquireEdisStatus("INE733E01010")
 // Use "ALL" to check all holdings
 println("Approved: ${status.approvedQuantity}/${status.totalQuantity}")
 ```
@@ -915,32 +1175,28 @@ println("Approved: ${status.approvedQuantity}/${status.totalQuantity}")
 ### Traders Control
 
 ```kotlin
-val tradersControlApi = dhan.getTradersControlApi()
-
 // Activate kill switch (disable all trading for the day)
-tradersControlApi.setKillSwitch(KillSwitchStatus.ACTIVATE)
+dhan.setKillSwitch(KillSwitchStatus.ACTIVATE)
 
 // Deactivate kill switch (re-enable trading)
-tradersControlApi.setKillSwitch(KillSwitchStatus.DEACTIVATE)
+dhan.setKillSwitch(KillSwitchStatus.DEACTIVATE)
 ```
 
 ### Statement
 
 ```kotlin
-val statementApi = dhan.getStatementApi()
-
 // Get ledger entries
-val ledger = statementApi.getLedger(
-    fromDate = "2024-01-01",
+val ledger = dhan.getLedger(GetLedgerParams {
+    fromDate = "2024-01-01"
     toDate = "2024-01-31"
-)
+})
 
 // Get trade history (paginated)
-val trades = statementApi.getTradeHistory(
-    fromDate = "2024-01-01",
-    toDate = "2024-01-31",
+val trades = dhan.getTradeHistory(GetTradeHistoryParams {
+    fromDate = "2024-01-01"
+    toDate = "2024-01-31"
     page = 0
-)
+})
 ```
 
 ---
@@ -951,7 +1207,7 @@ val trades = statementApi.getTradeHistory(
 import io.github.sonicalgo.dhan.exception.DhanApiException
 
 try {
-    val order = dhan.getOrdersApi().placeOrder(params)
+    val order = dhan.placeOrder(params)
 } catch (e: DhanApiException) {
     println("HTTP Status: ${e.httpStatusCode}")
     println("Message: ${e.message}")
@@ -983,7 +1239,7 @@ The SDK implements `Closeable` for unified resource cleanup. A single `close()` 
 // Create SDK and WebSocket clients
 val dhan = Dhan.builder().clientId("id").accessToken("token").build()
 val feedClient = dhan.createMarketFeedClient()
-val orderClient = dhan.createOrderUpdateClient()
+val orderClient = dhan.createOrderStreamClient()
 
 // ... use SDK ...
 
@@ -1020,7 +1276,7 @@ try (Dhan dhan = Dhan.builder().clientId("id").accessToken("token").build()) {
 
 ## Thread Safety
 
-- All API modules are thread-safe and can be called from any thread
+- All API methods are thread-safe and can be called from any thread
 - WebSocket callbacks are invoked on background threads
 - Use appropriate synchronization when updating UI from callbacks
 
@@ -1034,7 +1290,7 @@ try (Dhan dhan = Dhan.builder().clientId("id").accessToken("token").build()) {
 
 ### Dependencies
 
-- trading-core 1.0.0
+- trading-core 1.2.0
 - OkHttp 5.3.0
 - Jackson 2.20.1
 

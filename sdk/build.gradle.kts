@@ -1,28 +1,37 @@
 plugins {
-    kotlin("jvm") version "2.2.21"
+    kotlin("jvm")
+    id("com.google.devtools.ksp")
     id("com.vanniktech.maven.publish") version "0.35.0"
     signing
 }
 
 group = "io.github.sonicalgo"
-version = "1.0.0"
+version = "2.0.0"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("io.github.sonicalgo:trading-core:1.0.0")
+    api("io.github.sonicalgo:trading-core:1.2.0")
     implementation("com.squareup.okhttp3:okhttp:5.3.0")
     implementation("com.squareup.okhttp3:logging-interceptor:5.3.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.20.1")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.1")
+
+    // Builder generator (compileOnly - annotation is SOURCE retention, not needed at runtime)
+    compileOnly(project(":builder-annotations"))
+    ksp(project(":builder-processor"))
 }
 
 kotlin {
     jvmToolchain(11)
     compilerOptions {
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
+    }
+    // Include KSP generated sources
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
     }
 }
 
@@ -41,7 +50,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.sonicalgo",
         artifactId = "dhan-java-sdk",
-        version = "1.0.0",
+        version = "2.0.0",
     )
 
     pom {

@@ -20,13 +20,15 @@ internal class DhanHeaderProvider(private val config: DhanConfig) : HeaderProvid
      * Returns headers for Dhan API authentication.
      *
      * @return Map of header name to value
-     * @throws DhanApiException if access token is not set
+     * @throws DhanApiException if credentials are not set
      */
     override fun getHeaders(): Map<String, String> {
         val token = config.accessToken
-        if (token.isBlank()) {
+        val clientId = config.clientId
+
+        if (token.isBlank() || clientId.isBlank()) {
             throw DhanApiException(
-                message = "Access token not set. Call dhan.setAccessToken(token) before making API calls.",
+                message = "Credentials not set. Ensure clientId is set via builder and call dhan.setAccessToken(token) before making API calls.",
                 httpStatusCode = 0
             )
         }
@@ -35,7 +37,7 @@ internal class DhanHeaderProvider(private val config: DhanConfig) : HeaderProvid
             "Accept" to "application/json",
             "Content-Type" to "application/json",
             "access-token" to token,
-            "client-id" to config.clientId
+            "client-id" to clientId
         )
     }
 }
