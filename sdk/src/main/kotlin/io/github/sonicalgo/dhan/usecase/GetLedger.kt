@@ -3,6 +3,20 @@ package io.github.sonicalgo.dhan.usecase
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.github.sonicalgo.dhan.config.ApiClient
 
+/**
+ * Gets ledger entries for a date range via API.
+ */
+@JvmSynthetic
+internal fun executeGetLedger(apiClient: ApiClient, fromDate: String, toDate: String): List<LedgerEntry> {
+    return apiClient.get(
+        endpoint = "/ledger",
+        queryParams = mapOf(
+            "from-date" to fromDate,
+            "to-date" to toDate
+        )
+    )
+}
+
 // ==================== Response Models ====================
 
 /**
@@ -32,17 +46,3 @@ data class LedgerEntry(
     @JsonProperty("runningbal")
     val runningBalance: Double
 )
-
-/**
- * Gets ledger entries for a date range via API.
- */
-@JvmSynthetic
-internal fun executeGetLedger(apiClient: ApiClient, fromDate: String, toDate: String): List<LedgerEntry> {
-    return apiClient.get(
-        endpoint = "/ledger",
-        queryParams = mapOf(
-            "from-date" to fromDate,
-            "to-date" to toDate
-        )
-    )
-}

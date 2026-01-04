@@ -5,36 +5,6 @@ import io.github.sonicalgo.builder.GenerateBuilder
 import io.github.sonicalgo.dhan.config.ApiClient
 import io.github.sonicalgo.dhan.config.DhanConfig
 
-// ==================== Enums ====================
-
-/**
- * IP flag for static IP configuration.
- *
- * @see <a href="https://dhanhq.co/docs/v2/authentication/">DhanHQ Authentication</a>
- */
-enum class IpFlag {
-    /** Primary IP address */
-    @JsonProperty("PRIMARY")
-    PRIMARY,
-
-    /** Secondary IP address */
-    @JsonProperty("SECONDARY")
-    SECONDARY
-}
-
-// ==================== Response Models ====================
-
-/**
- * Response from set IP operation.
- */
-data class SetIpResult(
-    @JsonProperty("message")
-    val message: String,
-
-    @JsonProperty("status")
-    val status: String
-)
-
 /**
  * Sets static IP for order API whitelisting via API.
  */
@@ -46,6 +16,8 @@ internal fun executeSetIp(apiClient: ApiClient, config: DhanConfig, params: SetI
         body = request
     )
 }
+
+// ==================== Params ====================
 
 /**
  * Request parameters for setting static IP.
@@ -65,3 +37,33 @@ data class SetIpParams(
     @JsonProperty("ipFlag")
     val ipFlag: IpFlag
 )
+
+// ==================== Response Models ====================
+
+/**
+ * Response from set IP operation.
+ */
+data class SetIpResult(
+    @JsonProperty("message")
+    val message: String,
+
+    @JsonProperty("status")
+    val status: String
+)
+
+// ==================== Enums ====================
+
+/**
+ * IP flag for static IP configuration.
+ *
+ * @see <a href="https://dhanhq.co/docs/v2/authentication/">DhanHQ Authentication</a>
+ */
+enum class IpFlag {
+    /** Primary IP address */
+    @JsonProperty("PRIMARY")
+    PRIMARY,
+
+    /** Secondary IP address */
+    @JsonProperty("SECONDARY")
+    SECONDARY
+}

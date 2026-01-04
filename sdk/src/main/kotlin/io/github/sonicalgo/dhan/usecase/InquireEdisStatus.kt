@@ -3,25 +3,15 @@ package io.github.sonicalgo.dhan.usecase
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.github.sonicalgo.dhan.config.ApiClient
 
-// ==================== Enums ====================
-
 /**
- * EDIS transaction status.
- *
- * @see <a href="https://dhanhq.co/docs/v2/edis/">DhanHQ EDIS</a>
+ * Inquires EDIS approval status for a security via API.
+ * Use "ALL" as isin to check status for all holdings.
  */
-enum class EdisStatus {
-    /** Transaction successful */
-    @JsonProperty("SUCCESS")
-    SUCCESS,
-
-    /** Transaction failed */
-    @JsonProperty("FAILURE")
-    FAILURE,
-
-    /** Transaction pending */
-    @JsonProperty("PENDING")
-    PENDING
+@JvmSynthetic
+internal fun executeInquireEdisStatus(apiClient: ApiClient, isin: String): EdisStatusResponse {
+    return apiClient.get(
+        endpoint = "/edis/inquire/$isin"
+    )
 }
 
 // ==================== Response Models ====================
@@ -49,13 +39,23 @@ data class EdisStatusResponse(
     val remarks: String? = null
 )
 
+// ==================== Enums ====================
+
 /**
- * Inquires EDIS approval status for a security via API.
- * Use "ALL" as isin to check status for all holdings.
+ * EDIS transaction status.
+ *
+ * @see <a href="https://dhanhq.co/docs/v2/edis/">DhanHQ EDIS</a>
  */
-@JvmSynthetic
-internal fun executeInquireEdisStatus(apiClient: ApiClient, isin: String): EdisStatusResponse {
-    return apiClient.get(
-        endpoint = "/edis/inquire/$isin"
-    )
+enum class EdisStatus {
+    /** Transaction successful */
+    @JsonProperty("SUCCESS")
+    SUCCESS,
+
+    /** Transaction failed */
+    @JsonProperty("FAILURE")
+    FAILURE,
+
+    /** Transaction pending */
+    @JsonProperty("PENDING")
+    PENDING
 }

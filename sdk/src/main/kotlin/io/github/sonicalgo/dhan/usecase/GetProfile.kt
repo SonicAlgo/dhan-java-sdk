@@ -3,6 +3,44 @@ package io.github.sonicalgo.dhan.usecase
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.github.sonicalgo.dhan.config.ApiClient
 
+/**
+ * Gets user profile and token validity via API.
+ */
+@JvmSynthetic
+internal fun executeGetProfile(apiClient: ApiClient): UserProfile {
+    return apiClient.get(
+        endpoint = "/profile"
+    )
+}
+
+// ==================== Response Models ====================
+
+/**
+ * User profile information.
+ */
+data class UserProfile(
+    @JsonProperty("dhanClientId")
+    val dhanClientId: String,
+
+    @JsonProperty("tokenValidity")
+    val tokenValidity: String? = null,
+
+    @JsonProperty("activeSegment")
+    val activeSegment: String? = null,
+
+    @JsonProperty("ddpi")
+    val ddpi: DdpiStatus? = null,
+
+    @JsonProperty("mtf")
+    val mtf: MtfStatus? = null,
+
+    @JsonProperty("dataPlan")
+    val dataPlan: DataPlanStatus? = null,
+
+    @JsonProperty("dataValidity")
+    val dataValidity: String? = null
+)
+
 // ==================== Enums ====================
 
 /**
@@ -48,42 +86,4 @@ enum class DataPlanStatus {
     /** Data plan is deactive */
     @JsonProperty("Deactive")
     DEACTIVE
-}
-
-// ==================== Response Models ====================
-
-/**
- * User profile information.
- */
-data class UserProfile(
-    @JsonProperty("dhanClientId")
-    val dhanClientId: String,
-
-    @JsonProperty("tokenValidity")
-    val tokenValidity: String? = null,
-
-    @JsonProperty("activeSegment")
-    val activeSegment: String? = null,
-
-    @JsonProperty("ddpi")
-    val ddpi: DdpiStatus? = null,
-
-    @JsonProperty("mtf")
-    val mtf: MtfStatus? = null,
-
-    @JsonProperty("dataPlan")
-    val dataPlan: DataPlanStatus? = null,
-
-    @JsonProperty("dataValidity")
-    val dataValidity: String? = null
-)
-
-/**
- * Gets user profile and token validity via API.
- */
-@JvmSynthetic
-internal fun executeGetProfile(apiClient: ApiClient): UserProfile {
-    return apiClient.get(
-        endpoint = "/profile"
-    )
 }

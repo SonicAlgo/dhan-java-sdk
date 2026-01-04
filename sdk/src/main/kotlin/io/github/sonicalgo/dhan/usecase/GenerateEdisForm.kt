@@ -4,47 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.github.sonicalgo.builder.GenerateBuilder
 import io.github.sonicalgo.dhan.config.ApiClient
 
-// ==================== Enums ====================
-
-/**
- * Exchange for EDIS transactions.
- *
- * @see <a href="https://dhanhq.co/docs/v2/edis/">DhanHQ EDIS</a>
- */
-enum class Exchange {
-    /** National Stock Exchange */
-    @JsonProperty("NSE")
-    NSE,
-
-    /** Bombay Stock Exchange */
-    @JsonProperty("BSE")
-    BSE
-}
-
-/**
- * Segment for EDIS transactions.
- *
- * @see <a href="https://dhanhq.co/docs/v2/edis/">DhanHQ EDIS</a>
- */
-enum class Segment {
-    /** Equity segment */
-    @JsonProperty("EQ")
-    EQ
-}
-
-// ==================== Response Models ====================
-
-/**
- * EDIS form data.
- */
-data class EdisForm(
-    @JsonProperty("dhanClientId")
-    val dhanClientId: String? = null,
-
-    @JsonProperty("edisFormHtml")
-    val edisFormHtml: String
-)
-
 /**
  * Generates EDIS form for T-PIN entry and stock marking via API.
  */
@@ -55,6 +14,8 @@ internal fun executeGenerateEdisForm(apiClient: ApiClient, params: GenerateEdisF
         body = params
     )
 }
+
+// ==================== Params ====================
 
 /**
  * Request parameters for generating EDIS form.
@@ -82,3 +43,44 @@ data class GenerateEdisFormParams(
     @JsonProperty("bulk")
     val bulk: Boolean = false
 )
+
+// ==================== Response Models ====================
+
+/**
+ * EDIS form data.
+ */
+data class EdisForm(
+    @JsonProperty("dhanClientId")
+    val dhanClientId: String? = null,
+
+    @JsonProperty("edisFormHtml")
+    val edisFormHtml: String
+)
+
+// ==================== Enums ====================
+
+/**
+ * Exchange for EDIS transactions.
+ *
+ * @see <a href="https://dhanhq.co/docs/v2/edis/">DhanHQ EDIS</a>
+ */
+enum class Exchange {
+    /** National Stock Exchange */
+    @JsonProperty("NSE")
+    NSE,
+
+    /** Bombay Stock Exchange */
+    @JsonProperty("BSE")
+    BSE
+}
+
+/**
+ * Segment for EDIS transactions.
+ *
+ * @see <a href="https://dhanhq.co/docs/v2/edis/">DhanHQ EDIS</a>
+ */
+enum class Segment {
+    /** Equity segment */
+    @JsonProperty("EQ")
+    EQ
+}

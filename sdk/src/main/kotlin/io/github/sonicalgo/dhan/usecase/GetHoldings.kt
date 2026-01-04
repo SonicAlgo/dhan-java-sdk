@@ -3,6 +3,16 @@ package io.github.sonicalgo.dhan.usecase
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.github.sonicalgo.dhan.config.ApiClient
 
+/**
+ * Gets all holdings from demat account via API.
+ */
+@JvmSynthetic
+internal fun executeGetHoldings(apiClient: ApiClient): List<Holding> {
+    return apiClient.get(
+        endpoint = "/holdings"
+    )
+}
+
 // ==================== Response Models ====================
 
 /**
@@ -41,13 +51,3 @@ data class Holding(
     @JsonProperty("avgCostPrice")
     val averageCostPrice: Double
 )
-
-/**
- * Gets all holdings from demat account via API.
- */
-@JvmSynthetic
-internal fun executeGetHoldings(apiClient: ApiClient): List<Holding> {
-    return apiClient.get(
-        endpoint = "/holdings"
-    )
-}

@@ -3,6 +3,7 @@ package io.github.sonicalgo.dhan
 import io.github.sonicalgo.core.client.HttpClientProvider
 import io.github.sonicalgo.dhan.common.*
 import io.github.sonicalgo.dhan.config.ApiClient
+import io.github.sonicalgo.dhan.config.AuthApiClient
 import io.github.sonicalgo.dhan.config.DhanConfig
 import io.github.sonicalgo.dhan.config.DhanConstants
 import io.github.sonicalgo.dhan.config.DhanHeaderProvider
@@ -137,6 +138,9 @@ class Dhan private constructor(internal val config: DhanConfig) : Closeable {
     private val headerProvider = DhanHeaderProvider(config)
     private val clientProvider = HttpClientProvider(config, headerProvider, DhanConstants.SHUTDOWN_TIMEOUT_SECONDS)
     private val apiClient = ApiClient(config, clientProvider)
+
+    // Auth API client for consent-based authentication (uses per-call credentials)
+    private val authApiClient = AuthApiClient(config)
 
     // Track WebSocket clients for unified lifecycle management
     private val webSocketClients = CopyOnWriteArrayList<Closeable>()
@@ -1123,6 +1127,80 @@ class Dhan private constructor(internal val config: DhanConfig) : Closeable {
         executeCalculateMargin(apiClient, config, params)
 
     // ==================== Auth ====================
+
+    /**
+     * Generates a consent app ID for the authentication flow.
+     *
+     * This is the first step in the consent-based authentication flow for individual traders.
+     * The returned consentAppId serves as a temporary session identifier required for
+     * the subsequent browser-based login step.
+     *
+     * Users can generate up to 25 consent app IDs daily.
+     *
+     * ## Kotlin Example
+     * ```kotlin
+     * val consent = dhan.generateConsent(
+     *     appId = "your-app-id",
+     *     appSecret = "your-app-secret"
+     * )
+     * println("Consent App ID: ${consent.consentAppId}")
+     * // Redirect user to: https://login.dhan.co?consent_id=${consent.consentAppId}
+     * ```
+     *
+     * ## Java Example
+     * ```java
+     * GenerateConsentResult consent = dhan.generateConsent("your-app-id", "your-app-secret");
+     * System.out.println("Consent App ID: " + consent.getConsentAppId());
+     * ```
+     *
+     * @param appId API Key generated from Dhan
+     * @param appSecret API Secret generated from Dhan
+     * @return [GenerateConsentResult] with consentAppId for browser login
+     * @see <a href="https://dhanhq.co/docs/v2/authentication/">DhanHQ Authentication API</a>
+     */
+    fun generateConsent(appId: String, appSecret: String): GenerateConsentResult =
+        executeGenerateConsent(authApiClient, config.clientId, appId, appSecret)
+
+    /**
+     * Consumes the consent token to obtain access credentials.
+     *
+     * This is the final step in the consent-based authentication flow. After the user
+     * completes browser login and grants consent, use this method with the tokenId
+     * received from the callback to obtain the access token.
+     *
+     * ## Kotlin Example
+     * ```kotlin
+     * val credentials = dhan.consumeConsent(
+     *     tokenId = "token-from-callback",
+     *     appId = "your-app-id",
+     *     appSecret = "your-app-secret"
+     * )
+     * println("Access Token: ${credentials.accessToken}")
+     * println("Expires: ${credentials.expiryTime}")
+     *
+     * // Use the access token for trading APIs
+     * dhan.setAccessToken(credentials.accessToken)
+     * ```
+     *
+     * ## Java Example
+     * ```java
+     * ConsumeConsentResult credentials = dhan.consumeConsent(
+     *     "token-from-callback",
+     *     "your-app-id",
+     *     "your-app-secret"
+     * );
+     * System.out.println("Access Token: " + credentials.getAccessToken());
+     * dhan.setAccessToken(credentials.getAccessToken());
+     * ```
+     *
+     * @param tokenId User-specific token obtained from browser login callback
+     * @param appId API Key generated from Dhan
+     * @param appSecret API Secret generated from Dhan
+     * @return [ConsumeConsentResult] with accessToken and user details
+     * @see <a href="https://dhanhq.co/docs/v2/authentication/">DhanHQ Authentication API</a>
+     */
+    fun consumeConsent(tokenId: String, appId: String, appSecret: String): ConsumeConsentResult =
+        executeConsumeConsent(authApiClient, tokenId, appId, appSecret)
 
     /**
      * Gets user profile and token validity.

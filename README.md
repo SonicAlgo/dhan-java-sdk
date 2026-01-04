@@ -11,13 +11,13 @@ Unofficial Kotlin/Java SDK for the [Dhan](https://dhanhq.co) trading platform. S
 ### Gradle (Kotlin DSL)
 
 ```kotlin
-implementation("io.github.sonicalgo:dhan-java-sdk:2.0.0")
+implementation("io.github.sonicalgo:dhan-java-sdk:2.1.0")
 ```
 
 ### Gradle (Groovy)
 
 ```groovy
-implementation 'io.github.sonicalgo:dhan-java-sdk:2.0.0'
+implementation 'io.github.sonicalgo:dhan-java-sdk:2.1.0'
 ```
 
 ### Maven
@@ -169,7 +169,7 @@ positions.filter { it.positionType == PositionType.LONG }
 
 ## Features
 
-- **41 REST API operations** - Orders, Portfolio, Market Quotes, Historical Data, Option Chain, and more
+- **43 REST API operations** - Orders, Portfolio, Market Quotes, Historical Data, Option Chain, and more
 - **Real-time market data** - WebSocket streaming with binary protocol (low latency)
 - **Real-time order updates** - Order and trade updates via WebSocket
 - **Automatic reconnection** - WebSocket clients reconnect with exponential backoff
@@ -184,6 +184,8 @@ positions.filter { it.positionType == PositionType.LONG }
 | Method | Description |
 |--------|-------------|
 | **Authentication** | |
+| `generateConsent(appId, appSecret)` | Generate consent app ID for auth flow |
+| `consumeConsent(tokenId, appId, appSecret)` | Exchange token for access credentials |
 | `getProfile()` | Get user profile |
 | `setIp()` | Set static IP for order APIs |
 | `modifyIp()` | Modify IP (once per 7 days) |
@@ -544,6 +546,88 @@ feedClient.connect()  // Now authenticates with new token
 ## REST API Reference
 
 ### Authentication
+
+#### Consent-Based Authentication Flow
+
+For individual traders using the API Key method, the SDK provides a consent-based authentication flow:
+
+<details open>
+<summary>Kotlin</summary>
+
+```kotlin
+// Step 1: Create SDK instance with just client ID
+val dhan = Dhan.builder()
+    .clientId("1000000001")
+    .build()
+
+// Step 2: Generate consent (returns consentAppId)
+val consent = dhan.generateConsent(
+    appId = "your-app-id",
+    appSecret = "your-app-secret"
+)
+println("Consent App ID: ${consent.consentAppId}")
+
+// Step 3: Redirect user to browser for login
+// URL: https://login.dhan.co?consent_id=${consent.consentAppId}
+// After login, user is redirected to your callback URL with tokenId
+
+// Step 4: Exchange token for access credentials
+val credentials = dhan.consumeConsent(
+    tokenId = "token-from-callback",
+    appId = "your-app-id",
+    appSecret = "your-app-secret"
+)
+println("Access Token: ${credentials.accessToken}")
+println("Client Name: ${credentials.dhanClientName}")
+println("Expires: ${credentials.expiryTime}")
+
+// Step 5: Set access token for trading APIs
+dhan.setAccessToken(credentials.accessToken)
+
+// Now you can use trading APIs
+val profile = dhan.getProfile()
+```
+
+</details>
+
+<details>
+<summary>Java</summary>
+
+```java
+// Step 1: Create SDK instance with just client ID
+Dhan dhan = Dhan.builder()
+    .clientId("1000000001")
+    .build();
+
+// Step 2: Generate consent (returns consentAppId)
+GenerateConsentResult consent = dhan.generateConsent("your-app-id", "your-app-secret");
+System.out.println("Consent App ID: " + consent.getConsentAppId());
+
+// Step 3: Redirect user to browser for login
+// URL: https://login.dhan.co?consent_id=<consentAppId>
+// After login, user is redirected to your callback URL with tokenId
+
+// Step 4: Exchange token for access credentials
+ConsumeConsentResult credentials = dhan.consumeConsent(
+    "token-from-callback",
+    "your-app-id",
+    "your-app-secret"
+);
+System.out.println("Access Token: " + credentials.getAccessToken());
+System.out.println("Client Name: " + credentials.getDhanClientName());
+
+// Step 5: Set access token for trading APIs
+dhan.setAccessToken(credentials.getAccessToken());
+
+// Now you can use trading APIs
+var profile = dhan.getProfile();
+```
+
+</details>
+
+> **Note:** Users can generate up to 25 consent app IDs daily.
+
+#### Profile and IP Configuration
 
 ```kotlin
 // Get user profile

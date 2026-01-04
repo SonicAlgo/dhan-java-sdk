@@ -6,6 +6,17 @@ import io.github.sonicalgo.dhan.common.ProductType
 import io.github.sonicalgo.dhan.common.TransactionType
 import io.github.sonicalgo.dhan.config.ApiClient
 
+/**
+ * Gets trade history for a date range via API.
+ * Results are paginated.
+ */
+@JvmSynthetic
+internal fun executeGetTradeHistory(apiClient: ApiClient, fromDate: String, toDate: String, page: Int = 0): List<TradeHistory> {
+    return apiClient.get(
+        endpoint = "/trades/$fromDate/$toDate/$page"
+    )
+}
+
 // ==================== Response Models ====================
 
 /**
@@ -53,14 +64,3 @@ data class TradeHistory(
     @JsonProperty("exchangeTime")
     val exchangeTime: String? = null
 )
-
-/**
- * Gets trade history for a date range via API.
- * Results are paginated.
- */
-@JvmSynthetic
-internal fun executeGetTradeHistory(apiClient: ApiClient, fromDate: String, toDate: String, page: Int = 0): List<TradeHistory> {
-    return apiClient.get(
-        endpoint = "/trades/$fromDate/$toDate/$page"
-    )
-}

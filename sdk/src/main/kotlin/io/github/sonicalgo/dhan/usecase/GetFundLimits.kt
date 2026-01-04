@@ -3,6 +3,16 @@ package io.github.sonicalgo.dhan.usecase
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.github.sonicalgo.dhan.config.ApiClient
 
+/**
+ * Gets fund limit and margin details via API.
+ */
+@JvmSynthetic
+internal fun executeGetFundLimits(apiClient: ApiClient): FundLimit {
+    return apiClient.get(
+        endpoint = "/fundlimit"
+    )
+}
+
 // ==================== Response Models ====================
 
 /**
@@ -41,13 +51,3 @@ data class FundLimit(
     @JsonProperty("withdrawableBalance")
     val withdrawableBalance: Double
 )
-
-/**
- * Gets fund limit and margin details via API.
- */
-@JvmSynthetic
-internal fun executeGetFundLimits(apiClient: ApiClient): FundLimit {
-    return apiClient.get(
-        endpoint = "/fundlimit"
-    )
-}

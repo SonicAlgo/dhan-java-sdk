@@ -3,6 +3,16 @@ package io.github.sonicalgo.dhan.usecase
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.github.sonicalgo.dhan.config.ApiClient
 
+/**
+ * Gets current static IP configuration via API.
+ */
+@JvmSynthetic
+internal fun executeGetIpConfiguration(apiClient: ApiClient): IpConfiguration {
+    return apiClient.get(
+        endpoint = "/ip/getIP"
+    )
+}
+
 // ==================== Response Models ====================
 
 /**
@@ -23,13 +33,3 @@ data class IpConfiguration(
     @JsonProperty("modifyDateSecondary")
     val modifyDateSecondary: String? = null
 )
-
-/**
- * Gets current static IP configuration via API.
- */
-@JvmSynthetic
-internal fun executeGetIpConfiguration(apiClient: ApiClient): IpConfiguration {
-    return apiClient.get(
-        endpoint = "/ip/getIP"
-    )
-}

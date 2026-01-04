@@ -10,6 +10,16 @@ import io.github.sonicalgo.dhan.common.TransactionType
 import io.github.sonicalgo.dhan.common.Validity
 import io.github.sonicalgo.dhan.config.ApiClient
 
+/**
+ * Gets all Super Orders for the day via API.
+ */
+@JvmSynthetic
+internal fun executeGetSuperOrders(apiClient: ApiClient): List<SuperOrderBookItem> {
+    return apiClient.get(
+        endpoint = "/super/orders"
+    )
+}
+
 // ==================== Response Models ====================
 
 /**
@@ -130,13 +140,3 @@ data class SuperOrderLegDetail(
     @JsonProperty("trailingJump")
     val trailingJump: Double? = null
 )
-
-/**
- * Gets all Super Orders for the day via API.
- */
-@JvmSynthetic
-internal fun executeGetSuperOrders(apiClient: ApiClient): List<SuperOrderBookItem> {
-    return apiClient.get(
-        endpoint = "/super/orders"
-    )
-}

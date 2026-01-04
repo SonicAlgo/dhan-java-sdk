@@ -8,39 +8,6 @@ import io.github.sonicalgo.dhan.common.TransactionType
 import io.github.sonicalgo.dhan.config.ApiClient
 import io.github.sonicalgo.dhan.config.DhanConfig
 
-// ==================== Response Models ====================
-
-/**
- * Margin calculation result.
- *
- * @see <a href="https://dhanhq.co/docs/v2/funds/">DhanHQ Funds API</a>
- */
-data class MarginCalculation(
-    @JsonProperty("totalMargin")
-    val totalMargin: Double,
-
-    @JsonProperty("spanMargin")
-    val spanMargin: Double,
-
-    @JsonProperty("exposureMargin")
-    val exposureMargin: Double,
-
-    @JsonProperty("availableBalance")
-    val availableBalance: Double,
-
-    @JsonProperty("variableMargin")
-    val variableMargin: Double,
-
-    @JsonProperty("insufficientBalance")
-    val insufficientBalance: Double,
-
-    @JsonProperty("brokerage")
-    val brokerage: Double,
-
-    @JsonProperty("leverage")
-    val leverage: String? = null
-)
-
 /**
  * Calculates margin requirements for an order via API.
  */
@@ -52,6 +19,8 @@ internal fun executeCalculateMargin(apiClient: ApiClient, config: DhanConfig, pa
         body = request
     )
 }
+
+// ==================== Params ====================
 
 /**
  * Request parameters for calculating margin requirements.
@@ -91,4 +60,37 @@ data class CalculateMarginParams(
 
     @JsonProperty("triggerPrice")
     val triggerPrice: Double? = null
+)
+
+// ==================== Response Models ====================
+
+/**
+ * Margin calculation result.
+ *
+ * @see <a href="https://dhanhq.co/docs/v2/funds/">DhanHQ Funds API</a>
+ */
+data class MarginCalculation(
+    @JsonProperty("totalMargin")
+    val totalMargin: Double,
+
+    @JsonProperty("spanMargin")
+    val spanMargin: Double,
+
+    @JsonProperty("exposureMargin")
+    val exposureMargin: Double,
+
+    @JsonProperty("availableBalance")
+    val availableBalance: Double,
+
+    @JsonProperty("variableMargin")
+    val variableMargin: Double,
+
+    @JsonProperty("insufficientBalance")
+    val insufficientBalance: Double,
+
+    @JsonProperty("brokerage")
+    val brokerage: Double,
+
+    @JsonProperty("leverage")
+    val leverage: String? = null
 )

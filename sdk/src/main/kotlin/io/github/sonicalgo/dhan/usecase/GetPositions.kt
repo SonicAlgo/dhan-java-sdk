@@ -7,6 +7,16 @@ import io.github.sonicalgo.dhan.common.PositionType
 import io.github.sonicalgo.dhan.common.ProductType
 import io.github.sonicalgo.dhan.config.ApiClient
 
+/**
+ * Gets all open positions via API.
+ */
+@JvmSynthetic
+internal fun executeGetPositions(apiClient: ApiClient): List<Position> {
+    return apiClient.get(
+        endpoint = "/positions"
+    )
+}
+
 // ==================== Response Models ====================
 
 /**
@@ -99,13 +109,3 @@ data class Position(
     @JsonProperty("crossCurrency")
     val crossCurrency: Boolean? = null
 )
-
-/**
- * Gets all open positions via API.
- */
-@JvmSynthetic
-internal fun executeGetPositions(apiClient: ApiClient): List<Position> {
-    return apiClient.get(
-        endpoint = "/positions"
-    )
-}

@@ -5,6 +5,39 @@ import io.github.sonicalgo.builder.GenerateBuilder
 import io.github.sonicalgo.dhan.config.ApiClient
 import io.github.sonicalgo.dhan.exception.DhanApiException
 
+/**
+ * Gets option chain data for an underlying via API.
+ */
+@JvmSynthetic
+internal fun executeGetOptionChain(apiClient: ApiClient, params: GetOptionChainParams): OptionChain {
+    val response: OptionChainResponse = apiClient.post(
+        endpoint = "/optionchain",
+        body = params
+    )
+    return response.data ?: throw DhanApiException("Empty option chain response", null)
+}
+
+// ==================== Params ====================
+
+/**
+ * Request parameters for option chain data.
+ *
+ * @property underlyingScrip Security ID of underlying instrument
+ * @property underlyingSegment Exchange and segment identifier
+ * @property expiry Option expiry date in YYYY-MM-DD format
+ */
+@GenerateBuilder
+data class GetOptionChainParams(
+    @JsonProperty("UnderlyingScrip")
+    val underlyingScrip: Int,
+
+    @JsonProperty("UnderlyingSeg")
+    val underlyingSegment: String? = null,
+
+    @JsonProperty("Expiry")
+    val expiry: String? = null
+)
+
 // ==================== Response Models ====================
 
 /**
@@ -75,35 +108,4 @@ internal data class OptionChainResponse(
 
     @JsonProperty("status")
     val status: String? = null
-)
-
-/**
- * Gets option chain data for an underlying via API.
- */
-@JvmSynthetic
-internal fun executeGetOptionChain(apiClient: ApiClient, params: GetOptionChainParams): OptionChain {
-    val response: OptionChainResponse = apiClient.post(
-        endpoint = "/optionchain",
-        body = params
-    )
-    return response.data ?: throw DhanApiException("Empty option chain response", null)
-}
-
-/**
- * Request parameters for option chain data.
- *
- * @property underlyingScrip Security ID of underlying instrument
- * @property underlyingSegment Exchange and segment identifier
- * @property expiry Option expiry date in YYYY-MM-DD format
- */
-@GenerateBuilder
-data class GetOptionChainParams(
-    @JsonProperty("UnderlyingScrip")
-    val underlyingScrip: Int,
-
-    @JsonProperty("UnderlyingSeg")
-    val underlyingSegment: String? = null,
-
-    @JsonProperty("Expiry")
-    val expiry: String? = null
 )

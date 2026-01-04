@@ -12,6 +12,16 @@ import io.github.sonicalgo.dhan.common.TransactionType
 import io.github.sonicalgo.dhan.common.Validity
 import io.github.sonicalgo.dhan.config.ApiClient
 
+/**
+ * Gets all Forever Orders via API.
+ */
+@JvmSynthetic
+internal fun executeGetForeverOrders(apiClient: ApiClient): List<ForeverOrderBookItem> {
+    return apiClient.get(
+        endpoint = "/forever/orders"
+    )
+}
+
 // ==================== Response Models ====================
 
 /**
@@ -86,13 +96,3 @@ data class ForeverOrderBookItem(
     @JsonProperty("drvStrikePrice")
     val drvStrikePrice: Double? = null
 )
-
-/**
- * Gets all Forever Orders via API.
- */
-@JvmSynthetic
-internal fun executeGetForeverOrders(apiClient: ApiClient): List<ForeverOrderBookItem> {
-    return apiClient.get(
-        endpoint = "/forever/orders"
-    )
-}
