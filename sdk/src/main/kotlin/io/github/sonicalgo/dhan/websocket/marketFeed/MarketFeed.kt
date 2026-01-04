@@ -1,5 +1,6 @@
 package io.github.sonicalgo.dhan.websocket.marketFeed
 
+import io.github.sonicalgo.dhan.common.ExchangeSegment
 import io.github.sonicalgo.dhan.config.DhanConstants
 
 /**
@@ -54,35 +55,25 @@ enum class FeedMode(val code: Int) {
 /**
  * Instrument identifier for market feed subscription.
  *
- * Use the factory methods to create instruments for different exchange segments:
- * - [Instrument.nseEquity] - NSE Equity (Cash)
- * - [Instrument.nseFno] - NSE Futures & Options
- * - [Instrument.nseCurrency] - NSE Currency
- * - [Instrument.bseEquity] - BSE Equity (Cash)
- * - [Instrument.bseFno] - BSE Futures & Options
- * - [Instrument.bseCurrency] - BSE Currency
- * - [Instrument.mcxCommodity] - MCX Commodity
- * - [Instrument.index] - Index values
- *
  * ## Creating Instruments
  *
  * ```kotlin
  * // NSE Stocks
- * val hdfcBank = Instrument.nseEquity("1333")     // HDFC Bank
- * val tcs = Instrument.nseEquity("11536")         // TCS
- * val reliance = Instrument.nseEquity("2885")     // Reliance
+ * val hdfcBank = Instrument(ExchangeSegment.NSE_EQ, "1333")     // HDFC Bank
+ * val tcs = Instrument(ExchangeSegment.NSE_EQ, "11536")         // TCS
+ * val reliance = Instrument(ExchangeSegment.NSE_EQ, "2885")     // Reliance
  *
  * // NSE F&O
- * val niftyFut = Instrument.nseFno("43225")       // NIFTY futures
- * val bankNiftyOpt = Instrument.nseFno("52179")   // BANKNIFTY option
+ * val niftyFut = Instrument(ExchangeSegment.NSE_FNO, "43225")   // NIFTY futures
+ * val bankNiftyOpt = Instrument(ExchangeSegment.NSE_FNO, "52179") // BANKNIFTY option
  *
  * // Indices
- * val nifty50 = Instrument.index("26000")         // NIFTY 50
- * val bankNifty = Instrument.index("26009")       // BANK NIFTY
+ * val nifty50 = Instrument(ExchangeSegment.IDX_I, "26000")      // NIFTY 50
+ * val bankNifty = Instrument(ExchangeSegment.IDX_I, "26009")    // BANK NIFTY
  *
  * // MCX Commodities
- * val gold = Instrument.mcxCommodity("224035")    // Gold
- * val crude = Instrument.mcxCommodity("220822")   // Crude Oil
+ * val gold = Instrument(ExchangeSegment.MCX_COMM, "224035")     // Gold
+ * val crude = Instrument(ExchangeSegment.MCX_COMM, "220822")    // Crude Oil
  * ```
  *
  * ## Subscribing to Instruments
@@ -95,73 +86,23 @@ enum class FeedMode(val code: Int) {
  * // Subscribe to multiple instruments
  * client.subscribe(
  *     listOf(
- *         Instrument.nseEquity("1333"),
- *         Instrument.nseEquity("11536"),
- *         Instrument.index("26000")
+ *         Instrument(ExchangeSegment.NSE_EQ, "1333"),
+ *         Instrument(ExchangeSegment.NSE_EQ, "11536"),
+ *         Instrument(ExchangeSegment.IDX_I, "26000")
  *     ),
  *     FeedMode.TICKER
  * )
  * ```
  *
- * @property exchangeSegment Exchange segment code
+ * @property exchangeSegment Exchange segment
  * @property securityId Security ID from instruments master
+ * @see ExchangeSegment
  * @see <a href="https://dhanhq.co/docs/v2/instruments/">DhanHQ Instruments API</a>
  */
-@ConsistentCopyVisibility
-data class Instrument internal constructor(
-    val exchangeSegment: Int,
+data class Instrument(
+    val exchangeSegment: ExchangeSegment,
     val securityId: String
-) {
-    companion object {
-        /** Creates an instrument for NSE Equity (Cash) segment. */
-        fun nseEquity(securityId: String) = Instrument(
-            DhanConstants.ExchangeSegmentCode.NSE_EQ,
-            securityId
-        )
-
-        /** Creates an instrument for NSE Futures & Options segment. */
-        fun nseFno(securityId: String) = Instrument(
-            DhanConstants.ExchangeSegmentCode.NSE_FNO,
-            securityId
-        )
-
-        /** Creates an instrument for NSE Currency segment. */
-        fun nseCurrency(securityId: String) = Instrument(
-            DhanConstants.ExchangeSegmentCode.NSE_CURRENCY,
-            securityId
-        )
-
-        /** Creates an instrument for BSE Equity (Cash) segment. */
-        fun bseEquity(securityId: String) = Instrument(
-            DhanConstants.ExchangeSegmentCode.BSE_EQ,
-            securityId
-        )
-
-        /** Creates an instrument for BSE Futures & Options segment. */
-        fun bseFno(securityId: String) = Instrument(
-            DhanConstants.ExchangeSegmentCode.BSE_FNO,
-            securityId
-        )
-
-        /** Creates an instrument for BSE Currency segment. */
-        fun bseCurrency(securityId: String) = Instrument(
-            DhanConstants.ExchangeSegmentCode.BSE_CURRENCY,
-            securityId
-        )
-
-        /** Creates an instrument for MCX Commodity segment. */
-        fun mcxCommodity(securityId: String) = Instrument(
-            DhanConstants.ExchangeSegmentCode.MCX_COMM,
-            securityId
-        )
-
-        /** Creates an instrument for Index values. */
-        fun index(securityId: String) = Instrument(
-            DhanConstants.ExchangeSegmentCode.IDX_I,
-            securityId
-        )
-    }
-}
+)
 
 /**
  * Ticker packet data (basic price updates).
@@ -176,13 +117,13 @@ data class Instrument internal constructor(
  * }
  * ```
  *
- * @property exchangeSegment Exchange segment code
+ * @property exchangeSegment Exchange segment
  * @property securityId Security ID
  * @property ltp Last traded price
  * @property ltt Last traded time (Unix epoch seconds)
  */
 data class TickerData(
-    val exchangeSegment: Int,
+    val exchangeSegment: ExchangeSegment,
     val securityId: String,
     val ltp: String,
     val ltt: Long
@@ -218,7 +159,7 @@ data class DepthLevel(
  * }
  * ```
  *
- * @property exchangeSegment Exchange segment code
+ * @property exchangeSegment Exchange segment
  * @property securityId Security ID
  * @property ltp Last traded price
  * @property ltq Last traded quantity
@@ -233,7 +174,7 @@ data class DepthLevel(
  * @property lowPrice Day low price
  */
 data class QuoteData(
-    val exchangeSegment: Int,
+    val exchangeSegment: ExchangeSegment,
     val securityId: String,
     val ltp: String,
     val ltq: Int,
@@ -270,7 +211,7 @@ data class QuoteData(
  * }
  * ```
  *
- * @property exchangeSegment Exchange segment code
+ * @property exchangeSegment Exchange segment
  * @property securityId Security ID
  * @property ltp Last traded price
  * @property ltq Last traded quantity
@@ -290,7 +231,7 @@ data class QuoteData(
  * @property asks List of ask levels (best 5)
  */
 data class FullData(
-    val exchangeSegment: Int,
+    val exchangeSegment: ExchangeSegment,
     val securityId: String,
     val ltp: String,
     val ltq: Int,
@@ -315,7 +256,7 @@ data class FullData(
  *
  * Contains index value and OHLC data.
  *
- * @property exchangeSegment Exchange segment code
+ * @property exchangeSegment Exchange segment
  * @property securityId Security ID
  * @property indexValue Current index value
  * @property openValue Day open value
@@ -325,7 +266,7 @@ data class FullData(
  * @property changePercent Percentage change from close
  */
 data class IndexData(
-    val exchangeSegment: Int,
+    val exchangeSegment: ExchangeSegment,
     val securityId: String,
     val indexValue: String,
     val openValue: String,
@@ -338,12 +279,12 @@ data class IndexData(
 /**
  * Open Interest update data.
  *
- * @property exchangeSegment Exchange segment code
+ * @property exchangeSegment Exchange segment
  * @property securityId Security ID
  * @property openInterest Current open interest
  */
 data class OIData(
-    val exchangeSegment: Int,
+    val exchangeSegment: ExchangeSegment,
     val securityId: String,
     val openInterest: Long
 )
@@ -351,12 +292,12 @@ data class OIData(
 /**
  * Previous close update data.
  *
- * @property exchangeSegment Exchange segment code
+ * @property exchangeSegment Exchange segment
  * @property securityId Security ID
  * @property previousClose Previous close price
  */
 data class PrevCloseData(
-    val exchangeSegment: Int,
+    val exchangeSegment: ExchangeSegment,
     val securityId: String,
     val previousClose: String
 )
@@ -364,10 +305,10 @@ data class PrevCloseData(
 /**
  * Market status update.
  *
- * @property exchangeSegment Exchange segment code
+ * @property exchangeSegment Exchange segment
  * @property status Market status (OPEN, CLOSED, etc.)
  */
 data class MarketStatusData(
-    val exchangeSegment: Int,
+    val exchangeSegment: ExchangeSegment?,
     val status: String
 )

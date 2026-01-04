@@ -64,7 +64,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  *
  * feedClient.connect()
  * feedClient.subscribe(
- *     listOf(Instrument.nseEquity("1333")),
+ *     listOf(Instrument(ExchangeSegment.NSE_EQ, "1333")),
  *     FeedMode.TICKER
  * )
  * ```
@@ -1465,7 +1465,7 @@ class Dhan private constructor(internal val config: DhanConfig) : Closeable {
      *     }
      * })
      * client.connect()
-     * client.subscribe(listOf(Instrument.nseEquity("1333")), FeedMode.TICKER)
+     * client.subscribe(listOf(Instrument(ExchangeSegment.NSE_EQ, "1333")), FeedMode.TICKER)
      * ```
      *
      * ## Java Example

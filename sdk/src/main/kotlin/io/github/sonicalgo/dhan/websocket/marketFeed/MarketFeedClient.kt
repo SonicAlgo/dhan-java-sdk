@@ -57,20 +57,20 @@ import java.util.concurrent.CopyOnWriteArrayList
  * // Subscribe to instruments
  * client.subscribe(
  *     listOf(
- *         Instrument.nseEquity("1333"),  // HDFC Bank
- *         Instrument.nseEquity("11536")  // TCS
+ *         Instrument(ExchangeSegment.NSE_EQ, "1333"),  // HDFC Bank
+ *         Instrument(ExchangeSegment.NSE_EQ, "11536") // TCS
  *     ),
  *     FeedMode.TICKER
  * )
  *
  * // Later: change mode
  * client.subscribe(
- *     listOf(Instrument.nseEquity("1333")),
+ *     listOf(Instrument(ExchangeSegment.NSE_EQ, "1333")),
  *     FeedMode.QUOTE
  * )
  *
  * // Unsubscribe
- * client.unsubscribe(listOf(Instrument.nseEquity("11536")))
+ * client.unsubscribe(listOf(Instrument(ExchangeSegment.NSE_EQ, "11536")))
  *
  * // Disconnect
  * client.close()
@@ -128,22 +128,22 @@ class MarketFeedClient internal constructor(
      * // Subscribe to NSE Equity stocks
      * client.subscribe(
      *     listOf(
-     *         Instrument.nseEquity("1333"),   // HDFC Bank
-     *         Instrument.nseEquity("11536"),  // TCS
-     *         Instrument.nseEquity("2885")    // Reliance
+     *         Instrument(ExchangeSegment.NSE_EQ, "1333"),   // HDFC Bank
+     *         Instrument(ExchangeSegment.NSE_EQ, "11536"),  // TCS
+     *         Instrument(ExchangeSegment.NSE_EQ, "2885")    // Reliance
      *     ),
      *     FeedMode.TICKER
      * )
      *
      * // Subscribe to index
      * client.subscribe(
-     *     listOf(Instrument.index("26000")),  // NIFTY 50
+     *     listOf(Instrument(ExchangeSegment.IDX_I, "26000")),  // NIFTY 50
      *     FeedMode.QUOTE
      * )
      *
      * // Subscribe to F&O
      * client.subscribe(
-     *     listOf(Instrument.nseFno("43225")), // NIFTY futures
+     *     listOf(Instrument(ExchangeSegment.NSE_FNO, "43225")), // NIFTY futures
      *     FeedMode.FULL
      * )
      * ```
@@ -152,12 +152,10 @@ class MarketFeedClient internal constructor(
      * Maximum 100 instruments per subscription request.
      * Maximum 5000 total instruments per connection.
      *
-     * @param instruments List of instruments to subscribe (use [Instrument] factory methods)
+     * @param instruments List of instruments to subscribe
      * @param mode Subscription mode: [FeedMode.TICKER], [FeedMode.QUOTE], or [FeedMode.FULL]
      * @return true if subscription request was sent, false if not connected
-     * @see Instrument.nseEquity
-     * @see Instrument.nseFno
-     * @see Instrument.index
+     * @see ExchangeSegment
      */
     fun subscribe(instruments: List<Instrument>, mode: FeedMode): Boolean {
         if (!isConnected) {
@@ -425,23 +423,8 @@ class MarketFeedClient internal constructor(
      */
     private fun buildSubscriptionJson(requestCode: Int, instruments: List<Instrument>): String {
         val instrumentsJson = instruments.joinToString(",") { inst ->
-            """{"ExchangeSegment":"${getExchangeSegmentString(inst.exchangeSegment)}","SecurityId":"${inst.securityId}"}"""
+            """{"ExchangeSegment":"${inst.exchangeSegment.name}","SecurityId":"${inst.securityId}"}"""
         }
         return """{"RequestCode":$requestCode,"InstrumentCount":${instruments.size},"InstrumentList":[$instrumentsJson]}"""
-    }
-
-    /**
-     * Converts exchange segment code to string representation for v2 API.
-     */
-    private fun getExchangeSegmentString(code: Int): String = when (code) {
-        DhanConstants.ExchangeSegmentCode.IDX_I -> "IDX_I"
-        DhanConstants.ExchangeSegmentCode.NSE_EQ -> "NSE_EQ"
-        DhanConstants.ExchangeSegmentCode.NSE_FNO -> "NSE_FNO"
-        DhanConstants.ExchangeSegmentCode.NSE_CURRENCY -> "NSE_CURRENCY"
-        DhanConstants.ExchangeSegmentCode.BSE_EQ -> "BSE_EQ"
-        DhanConstants.ExchangeSegmentCode.MCX_COMM -> "MCX_COMM"
-        DhanConstants.ExchangeSegmentCode.BSE_CURRENCY -> "BSE_CURRENCY"
-        DhanConstants.ExchangeSegmentCode.BSE_FNO -> "BSE_FNO"
-        else -> code.toString()
     }
 }

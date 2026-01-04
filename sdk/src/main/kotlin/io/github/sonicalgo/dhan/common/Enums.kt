@@ -7,42 +7,38 @@ import com.fasterxml.jackson.annotation.JsonProperty
  *
  * @see <a href="https://dhanhq.co/docs/v2/annexure/">DhanHQ Annexure</a>
  */
-enum class ExchangeSegment(val code: Int) {
+enum class ExchangeSegment {
     /** Index Value */
     @JsonProperty("IDX_I")
-    IDX_I(0),
+    IDX_I,
 
     /** NSE Equity Cash */
     @JsonProperty("NSE_EQ")
-    NSE_EQ(1),
+    NSE_EQ,
 
     /** NSE Futures & Options */
     @JsonProperty("NSE_FNO")
-    NSE_FNO(2),
+    NSE_FNO,
 
     /** NSE Currency */
     @JsonProperty("NSE_CURRENCY")
-    NSE_CURRENCY(3),
+    NSE_CURRENCY,
 
     /** BSE Equity Cash */
     @JsonProperty("BSE_EQ")
-    BSE_EQ(4),
+    BSE_EQ,
 
     /** MCX Commodity */
     @JsonProperty("MCX_COMM")
-    MCX_COMM(5),
+    MCX_COMM,
 
     /** BSE Currency */
     @JsonProperty("BSE_CURRENCY")
-    BSE_CURRENCY(7),
+    BSE_CURRENCY,
 
     /** BSE Futures & Options */
     @JsonProperty("BSE_FNO")
-    BSE_FNO(8);
-
-    companion object {
-        fun fromCode(code: Int): ExchangeSegment? = entries.find { it.code == code }
-    }
+    BSE_FNO
 }
 
 /**

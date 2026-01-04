@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.github.sonicalgo"
-version = "2.1.0"
+version = "2.2.0"
 
 repositories {
     mavenCentral()
@@ -50,7 +50,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.sonicalgo",
         artifactId = "dhan-java-sdk",
-        version = "2.1.0",
+        version = "2.2.0",
     )
 
     pom {

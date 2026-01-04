@@ -72,20 +72,6 @@ internal object DhanConstants {
     /** Timeout in seconds for HTTP client shutdown. */
     const val SHUTDOWN_TIMEOUT_SECONDS = 5L
 
-    // ==================== Exchange Segment Codes ====================
-
-    /** Exchange segment code mapping for WebSocket subscriptions. */
-    object ExchangeSegmentCode {
-        const val IDX_I = 0          // Index values
-        const val NSE_EQ = 1         // NSE Equity Cash
-        const val NSE_FNO = 2        // NSE Futures & Options
-        const val NSE_CURRENCY = 3   // NSE Currency
-        const val BSE_EQ = 4         // BSE Equity Cash
-        const val MCX_COMM = 5       // MCX Commodity
-        const val BSE_CURRENCY = 7   // BSE Currency
-        const val BSE_FNO = 8        // BSE Futures & Options
-    }
-
     // ==================== WebSocket Request Codes ====================
 
     /** WebSocket request codes for market feed. */

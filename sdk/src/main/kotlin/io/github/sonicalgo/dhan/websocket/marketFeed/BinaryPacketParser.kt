@@ -1,5 +1,6 @@
 package io.github.sonicalgo.dhan.websocket.marketFeed
 
+import io.github.sonicalgo.dhan.common.ExchangeSegment
 import io.github.sonicalgo.dhan.config.DhanConstants
 import okio.ByteString
 import java.nio.ByteBuffer
@@ -39,15 +40,33 @@ internal object BinaryPacketParser {
         return "%.2f".format(this)
     }
 
+    /**
+     * Converts binary protocol exchange segment code to enum.
+     * The binary WebSocket protocol uses integer codes for exchange segments.
+     */
+    private fun exchangeSegmentFromCode(code: Int): ExchangeSegment? = when (code) {
+        0 -> ExchangeSegment.IDX_I
+        1 -> ExchangeSegment.NSE_EQ
+        2 -> ExchangeSegment.NSE_FNO
+        3 -> ExchangeSegment.NSE_CURRENCY
+        4 -> ExchangeSegment.BSE_EQ
+        5 -> ExchangeSegment.MCX_COMM
+        7 -> ExchangeSegment.BSE_CURRENCY
+        8 -> ExchangeSegment.BSE_FNO
+        else -> null
+    }
+
     // Helper data class for common header
-    private data class PacketHeader(val exchangeSegment: Int, val securityId: String)
+    private data class PacketHeader(val exchangeSegment: ExchangeSegment, val securityId: String)
 
     /**
      * Parses common header: H(2) + B(1) + I(4) = 7 bytes after packet type.
      */
     private fun parseHeader(buffer: ByteBuffer): PacketHeader {
         buffer.getShort()  // Skip 2-byte H field (unknown purpose)
-        val exchangeSegment = buffer.get().toInt() and 0xFF
+        val segmentCode = buffer.get().toInt() and 0xFF
+        val exchangeSegment = exchangeSegmentFromCode(segmentCode)
+            ?: throw IllegalArgumentException("Unknown exchange segment code: $segmentCode")
         val securityId = buffer.getInt().toString()
         return PacketHeader(exchangeSegment, securityId)
     }
@@ -264,7 +283,8 @@ internal object BinaryPacketParser {
     private fun parseMarketStatus(buffer: ByteBuffer, listener: MarketFeedListener) {
         // Format: <BHBI> - skip H(2) after packet type, then B(1) for exchange
         buffer.getShort()  // Skip 2-byte H field
-        val exchangeSegment = buffer.get().toInt() and 0xFF
+        val segmentCode = buffer.get().toInt() and 0xFF
+        val exchangeSegment = exchangeSegmentFromCode(segmentCode)
         // Read status from I(4) field - only using first byte
         val statusByte = buffer.get().toInt() and 0xFF
         buffer.position(buffer.position() + 3)  // Skip remaining 3 bytes of I field

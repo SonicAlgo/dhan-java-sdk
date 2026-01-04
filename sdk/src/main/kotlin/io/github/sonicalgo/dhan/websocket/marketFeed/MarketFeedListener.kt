@@ -50,7 +50,7 @@ package io.github.sonicalgo.dhan.websocket.marketFeed
  *     override fun onConnected() {
  *         // Subscribe on connection
  *         client.subscribe(
- *             listOf(Instrument.nseEquity("1333")),
+ *             listOf(Instrument(ExchangeSegment.NSE_EQ, "1333")),
  *             FeedMode.QUOTE
  *         )
  *     }

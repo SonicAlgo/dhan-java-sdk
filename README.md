@@ -371,9 +371,9 @@ feedClient.addListener(object : MarketFeedListener {
         // Subscribe with TICKER mode
         feedClient.subscribe(
             listOf(
-                Instrument.nseEquity("1333"),   // HDFC Bank
-                Instrument.nseEquity("11536"),  // TCS
-                Instrument.index("26000")       // Nifty 50
+                Instrument(ExchangeSegment.NSE_EQ, "1333"),   // HDFC Bank
+                Instrument(ExchangeSegment.NSE_EQ, "11536"),  // TCS
+                Instrument(ExchangeSegment.IDX_I, "26000")    // Nifty 50
             ),
             FeedMode.TICKER
         )
@@ -433,16 +433,16 @@ feedClient.connect()
 
 ```kotlin
 // Subscribe to instruments
-feedClient.subscribe(listOf(Instrument.nseEquity("1333")), FeedMode.TICKER)
+feedClient.subscribe(listOf(Instrument(ExchangeSegment.NSE_EQ, "1333")), FeedMode.TICKER)
 
 // Change mode for specific instruments
-feedClient.subscribe(listOf(Instrument.nseEquity("1333")), FeedMode.QUOTE)
+feedClient.subscribe(listOf(Instrument(ExchangeSegment.NSE_EQ, "1333")), FeedMode.QUOTE)
 
 // Subscribe to full mode with market depth
-feedClient.subscribe(listOf(Instrument.nseFno("43225")), FeedMode.FULL)
+feedClient.subscribe(listOf(Instrument(ExchangeSegment.NSE_FNO, "43225")), FeedMode.FULL)
 
 // Unsubscribe
-feedClient.unsubscribe(listOf(Instrument.nseEquity("11536")))
+feedClient.unsubscribe(listOf(Instrument(ExchangeSegment.NSE_EQ, "11536")))
 
 // Get current subscriptions
 val subscriptions = feedClient.getSubscriptions()  // Map<Instrument, FeedMode>
@@ -458,14 +458,14 @@ feedClient.close()
 #### Instrument Creation
 
 ```kotlin
-Instrument.nseEquity("1333")      // NSE stocks
-Instrument.nseFno("43225")        // NSE F&O
-Instrument.index("26000")         // NIFTY 50
-Instrument.mcxCommodity("224035") // MCX instruments
-Instrument.bseEquity("532540")    // BSE stocks
-Instrument.bseFno("...")          // BSE F&O
-Instrument.nseCurrency("...")     // NSE Currency
-Instrument.bseCurrency("...")     // BSE Currency
+Instrument(ExchangeSegment.NSE_EQ, "1333")       // NSE stocks
+Instrument(ExchangeSegment.NSE_FNO, "43225")     // NSE F&O
+Instrument(ExchangeSegment.IDX_I, "26000")       // NIFTY 50
+Instrument(ExchangeSegment.MCX_COMM, "224035")   // MCX instruments
+Instrument(ExchangeSegment.BSE_EQ, "532540")     // BSE stocks
+Instrument(ExchangeSegment.BSE_FNO, "...")       // BSE F&O
+Instrument(ExchangeSegment.NSE_CURRENCY, "...")  // NSE Currency
+Instrument(ExchangeSegment.BSE_CURRENCY, "...")  // BSE Currency
 ```
 
 ### Order Updates
